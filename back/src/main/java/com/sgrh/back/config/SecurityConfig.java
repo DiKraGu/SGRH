@@ -1,6 +1,6 @@
 package com.sgrh.back.config;
 
-import com.sgrh.back.security.CustomUserDetailsService;
+import com.sgrh.back.security.jwt.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,14 +12,12 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import com.sgrh.back.security.jwt.JwtAuthenticationFilter;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final CustomUserDetailsService customUserDetailsService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
@@ -28,10 +26,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration config
-    ) throws Exception {
-
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
 
@@ -45,18 +40,32 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers(
+                                "/api/auth/login",
+                                "/api/auth/create-admin"
+                        ).permitAll()
 
-                        .requestMatchers("/api/employes/**").hasAnyRole("ADMIN", "RH")
-                        .requestMatchers("/api/departements/**").hasAnyRole("ADMIN", "RH")
-                        .requestMatchers("/api/postes/**").hasAnyRole("ADMIN", "RH")
+                        // ADMIN uniquement : création des comptes utilisateurs
+                        .requestMatchers("/api/auth/register")
+                        .hasAuthority("ROLE_ADMIN")
+
+                        // ADMIN + RH : gestion des fiches employés
+                        .requestMatchers("/api/employes/**")
+                        .hasAnyAuthority("ROLE_ADMIN", "ROLE_RH")
+
+                        .requestMatchers("/api/departements/**")
+                        .hasAnyAuthority("ROLE_ADMIN", "ROLE_RH")
+
+                        .requestMatchers("/api/postes/**")
+                        .hasAnyAuthority("ROLE_ADMIN", "ROLE_RH")
 
                         .anyRequest().authenticated()
+                )
+                .addFilterBefore(
+                        jwtAuthenticationFilter,
+                        UsernamePasswordAuthenticationFilter.class
                 );
-        http.addFilterBefore(
-                jwtAuthenticationFilter,
-                UsernamePasswordAuthenticationFilter.class
-        );
+
         return http.build();
     }
 }

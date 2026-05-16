@@ -3,6 +3,7 @@ package com.sgrh.back.entity;
 import com.sgrh.back.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "utilisateurs")
@@ -20,6 +21,7 @@ public class Utilisateur {
     @Column(nullable = false, unique = true)
     private String email;
 
+    @JsonIgnore
     @Column(nullable = false)
     private String motDePasse;
 

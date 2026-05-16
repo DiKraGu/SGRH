@@ -68,12 +68,8 @@ public class AuthService {
             throw new RuntimeException("Un utilisateur avec cet email existe déjà");
         }
 
-        Employe employe = null;
-
-        if (request.getEmployeId() != null) {
-            employe = employeRepository.findById(request.getEmployeId())
-                    .orElseThrow(() -> new RuntimeException("Employé introuvable"));
-        }
+        Employe employe = employeRepository.findById(request.getEmployeId())
+                .orElseThrow(() -> new RuntimeException("Employé introuvable"));
 
         Utilisateur utilisateur = Utilisateur.builder()
                 .email(request.getEmail())
