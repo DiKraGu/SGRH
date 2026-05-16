@@ -41,6 +41,9 @@ public class Conge {
 
     private String commentaireRh;
 
+    @Column(nullable = false)
+    private Integer nombreJours;
+
     @ManyToOne
     @JoinColumn(name = "employe_id", nullable = false)
     private Employe employe;
