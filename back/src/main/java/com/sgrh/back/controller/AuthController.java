@@ -2,6 +2,7 @@ package com.sgrh.back.controller;
 
 import com.sgrh.back.dto.auth.LoginRequest;
 import com.sgrh.back.dto.auth.LoginResponse;
+import com.sgrh.back.dto.auth.RegisterRequest;
 import com.sgrh.back.entity.Utilisateur;
 import com.sgrh.back.service.AuthService;
 import lombok.RequiredArgsConstructor;
@@ -16,10 +17,7 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/login")
-    public LoginResponse login(
-            @RequestBody LoginRequest request
-    ) {
-
+    public LoginResponse login(@RequestBody LoginRequest request) {
         return authService.login(request);
     }
 
@@ -28,7 +26,11 @@ public class AuthController {
             @RequestParam String email,
             @RequestParam String password
     ) {
-
         return authService.createAdmin(email, password);
+    }
+
+    @PostMapping("/register")
+    public Utilisateur register(@RequestBody RegisterRequest request) {
+        return authService.register(request);
     }
 }

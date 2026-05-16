@@ -2,7 +2,11 @@ package com.sgrh.back.service;
 
 import com.sgrh.back.dto.auth.LoginRequest;
 import com.sgrh.back.dto.auth.LoginResponse;
+import com.sgrh.back.dto.auth.RegisterRequest;
+import com.sgrh.back.entity.Employe;
 import com.sgrh.back.entity.Utilisateur;
+import com.sgrh.back.enums.Role;
+import com.sgrh.back.repository.EmployeRepository;
 import com.sgrh.back.repository.UtilisateurRepository;
 import com.sgrh.back.security.jwt.JwtService;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +20,7 @@ import org.springframework.stereotype.Service;
 public class AuthService {
 
     private final UtilisateurRepository utilisateurRepository;
+    private final EmployeRepository employeRepository;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
@@ -41,16 +46,41 @@ public class AuthService {
                 .build();
     }
 
-    public Utilisateur createAdmin(
-            String email,
-            String motDePasse
-    ) {
+    public Utilisateur createAdmin(String email, String motDePasse) {
+
+        if (utilisateurRepository.existsByEmail(email)) {
+            throw new RuntimeException("Un utilisateur avec cet email existe déjà");
+        }
 
         Utilisateur utilisateur = Utilisateur.builder()
                 .email(email)
                 .motDePasse(passwordEncoder.encode(motDePasse))
-                .role(com.sgrh.back.enums.Role.ADMIN)
+                .role(Role.ADMIN)
                 .statut(true)
+                .build();
+
+        return utilisateurRepository.save(utilisateur);
+    }
+
+    public Utilisateur register(RegisterRequest request) {
+
+        if (utilisateurRepository.existsByEmail(request.getEmail())) {
+            throw new RuntimeException("Un utilisateur avec cet email existe déjà");
+        }
+
+        Employe employe = null;
+
+        if (request.getEmployeId() != null) {
+            employe = employeRepository.findById(request.getEmployeId())
+                    .orElseThrow(() -> new RuntimeException("Employé introuvable"));
+        }
+
+        Utilisateur utilisateur = Utilisateur.builder()
+                .email(request.getEmail())
+                .motDePasse(passwordEncoder.encode(request.getMotDePasse()))
+                .role(request.getRole())
+                .statut(true)
+                .employe(employe)
                 .build();
 
         return utilisateurRepository.save(utilisateur);
