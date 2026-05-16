@@ -94,6 +94,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/candidatures/**")
                         .permitAll()
 
+                        .requestMatchers("/api/dashboard/rh/**")
+                        .hasAnyAuthority("ROLE_ADMIN", "ROLE_RH")
+
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(
