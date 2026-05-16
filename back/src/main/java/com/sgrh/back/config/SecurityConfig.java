@@ -43,35 +43,28 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
 
-                        // AUTH
                         .requestMatchers(
                                 "/api/auth/login",
                                 "/api/auth/create-admin"
                         ).permitAll()
 
-                        // ADMIN uniquement
                         .requestMatchers("/api/auth/register")
                         .hasAuthority("ROLE_ADMIN")
 
-                        // EMPLOYES
                         .requestMatchers("/api/employes/**")
                         .hasAnyAuthority("ROLE_ADMIN", "ROLE_RH")
 
-                        // DEPARTEMENTS
                         .requestMatchers("/api/departements/**")
                         .hasAnyAuthority("ROLE_ADMIN", "ROLE_RH")
 
-                        // POSTES
                         .requestMatchers("/api/postes/**")
                         .hasAnyAuthority("ROLE_ADMIN", "ROLE_RH")
 
-                        // CONGES
                         .requestMatchers("/api/conges/**")
-                        .hasAnyAuthority(
-                                "ROLE_ADMIN",
-                                "ROLE_RH",
-                                "ROLE_EMPLOYE"
-                        )
+                        .hasAnyAuthority("ROLE_ADMIN", "ROLE_RH", "ROLE_EMPLOYE")
+
+                        .requestMatchers("/api/fiches-paie/**")
+                        .hasAnyAuthority("ROLE_ADMIN", "ROLE_RH", "ROLE_EMPLOYE")
 
                         .anyRequest().authenticated()
                 )
