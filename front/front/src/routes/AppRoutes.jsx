@@ -4,27 +4,46 @@ import Login from "../pages/Login";
 import DashboardAdmin from "../pages/DashboardAdmin";
 import DashboardRH from "../pages/DashboardRH";
 import DashboardEmploye from "../pages/DashboardEmploye";
+import Unauthorized from "../pages/Unauthorized";
+import ProtectedRoute from "./ProtectedRoute";
 
 function AppRoutes() {
-
     return (
-
         <BrowserRouter>
-
             <Routes>
-
                 <Route path="/" element={<Login />} />
 
-                <Route path="/admin" element={<DashboardAdmin />} />
+                <Route
+                    path="/admin"
+                    element={
+                        <ProtectedRoute allowedRoles={["ADMIN"]}>
+                            <DashboardAdmin />
+                        </ProtectedRoute>
+                    }
+                />
 
-                <Route path="/rh" element={<DashboardRH />} />
+                <Route
+                    path="/rh"
+                    element={
+                        <ProtectedRoute allowedRoles={["RH"]}>
+                            <DashboardRH />
+                        </ProtectedRoute>
+                    }
+                />
 
-                <Route path="/employe" element={<DashboardEmploye />} />
+                <Route
+                    path="/employe"
+                    element={
+                        <ProtectedRoute allowedRoles={["EMPLOYE"]}>
+                            <DashboardEmploye />
+                        </ProtectedRoute>
+                    }
+                />
 
+                <Route path="/unauthorized" element={<Unauthorized />} />
             </Routes>
-
         </BrowserRouter>
-    )
+    );
 }
 
 export default AppRoutes;
