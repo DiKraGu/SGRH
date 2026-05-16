@@ -66,6 +66,12 @@ public class SecurityConfig {
                         .requestMatchers("/api/fiches-paie/**")
                         .hasAnyAuthority("ROLE_ADMIN", "ROLE_RH", "ROLE_EMPLOYE")
 
+                        .requestMatchers("/api/offres/**")
+                        .hasAnyAuthority("ROLE_ADMIN", "ROLE_RH")
+
+                        .requestMatchers("/api/candidatures/**")
+                        .permitAll()
+
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(
