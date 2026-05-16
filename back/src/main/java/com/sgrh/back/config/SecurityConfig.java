@@ -26,7 +26,9 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+    public AuthenticationManager authenticationManager(
+            AuthenticationConfiguration config
+    ) throws Exception {
         return config.getAuthenticationManager();
     }
 
@@ -40,24 +42,36 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
+
+                        // AUTH
                         .requestMatchers(
                                 "/api/auth/login",
                                 "/api/auth/create-admin"
                         ).permitAll()
 
-                        // ADMIN uniquement : création des comptes utilisateurs
+                        // ADMIN uniquement
                         .requestMatchers("/api/auth/register")
                         .hasAuthority("ROLE_ADMIN")
 
-                        // ADMIN + RH : gestion des fiches employés
+                        // EMPLOYES
                         .requestMatchers("/api/employes/**")
                         .hasAnyAuthority("ROLE_ADMIN", "ROLE_RH")
 
+                        // DEPARTEMENTS
                         .requestMatchers("/api/departements/**")
                         .hasAnyAuthority("ROLE_ADMIN", "ROLE_RH")
 
+                        // POSTES
                         .requestMatchers("/api/postes/**")
                         .hasAnyAuthority("ROLE_ADMIN", "ROLE_RH")
+
+                        // CONGES
+                        .requestMatchers("/api/conges/**")
+                        .hasAnyAuthority(
+                                "ROLE_ADMIN",
+                                "ROLE_RH",
+                                "ROLE_EMPLOYE"
+                        )
 
                         .anyRequest().authenticated()
                 )
