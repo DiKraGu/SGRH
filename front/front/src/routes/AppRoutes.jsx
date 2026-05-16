@@ -5,6 +5,7 @@ import DashboardAdmin from "../pages/DashboardAdmin";
 import DashboardRH from "../pages/DashboardRH";
 import DashboardEmploye from "../pages/DashboardEmploye";
 import Unauthorized from "../pages/Unauthorized";
+import CandidaturesRH from "../pages/CandidaturesRH";
 import ProtectedRoute from "./ProtectedRoute";
 
 function AppRoutes() {
@@ -27,6 +28,15 @@ function AppRoutes() {
                     element={
                         <ProtectedRoute allowedRoles={["RH"]}>
                             <DashboardRH />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/rh/candidatures"
+                    element={
+                        <ProtectedRoute allowedRoles={["RH"]}>
+                            <CandidaturesRH />
                         </ProtectedRoute>
                     }
                 />

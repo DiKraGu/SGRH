@@ -70,6 +70,9 @@ public class SecurityConfig {
                                 "/api/auth/create-admin"
                         ).permitAll()
 
+                        .requestMatchers("/cv/**")
+                        .permitAll()
+
                         .requestMatchers("/api/auth/register")
                         .hasAuthority("ROLE_ADMIN")
 

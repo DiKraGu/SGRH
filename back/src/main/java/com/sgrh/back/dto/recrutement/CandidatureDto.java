@@ -26,6 +26,8 @@ public class CandidatureDto {
 
     private String cheminCV;
 
+    private String fichiersComplementaires;
+
     private LocalDate dateSoumission;
 
     private StatutCandidature statut;

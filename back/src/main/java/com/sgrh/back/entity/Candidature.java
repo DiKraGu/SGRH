@@ -40,6 +40,9 @@ public class Candidature {
 
     private String cheminCV;
 
+    @Column(columnDefinition = "TEXT")
+    private String fichiersComplementaires;
+
     @Column(nullable = false)
     private LocalDate dateSoumission;
 

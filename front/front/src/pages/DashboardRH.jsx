@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { getRhDashboardStats } from "../services/dashboardService";
 import "../styles/dashboard.css";
 
 function DashboardRH() {
+    const navigate = useNavigate();
     const email = localStorage.getItem("email");
 
     const [stats, setStats] = useState({
@@ -36,7 +38,12 @@ function DashboardRH() {
                     <div className="sidebar-item">Employés</div>
                     <div className="sidebar-item">Congés</div>
                     <div className="sidebar-item">Salaires</div>
-                    <div className="sidebar-item">Recrutement</div>
+                    <div
+                        className="sidebar-item"
+                        onClick={() => navigate("/rh/candidatures")}
+                    >
+                        Recrutement
+                    </div>
                 </div>
             </aside>
 
@@ -92,9 +99,20 @@ function DashboardRH() {
                     <div className="section-card">
                         <h2>Actions rapides</h2>
 
-                        <button className="action-button">Voir les candidatures</button>
-                        <button className="action-button secondary">Traiter les congés</button>
-                        <button className="action-button secondary">Gérer les employés</button>
+                        <button
+                            className="action-button"
+                            onClick={() => navigate("/rh/candidatures")}
+                        >
+                            Voir les candidatures
+                        </button>
+
+                        <button className="action-button secondary">
+                            Traiter les congés
+                        </button>
+
+                        <button className="action-button secondary">
+                            Gérer les employés
+                        </button>
                     </div>
                 </div>
             </main>
