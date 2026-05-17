@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
     getAllEmployes,
+    createEmploye,
     updateEmploye,
     desactiverEmploye,
 } from "../services/employeService";
@@ -16,14 +17,56 @@ function EmployesRH() {
     const [employes, setEmployes] = useState([]);
     const [departements, setDepartements] = useState([]);
     const [postes, setPostes] = useState([]);
+
     const [searchTerm, setSearchTerm] = useState("");
+    const [departementFilter, setDepartementFilter] = useState("TOUS");
+    const [contratFilter, setContratFilter] = useState("TOUS");
+    const [statutFilter, setStatutFilter] = useState("TOUS");
+
     const [selectedEmploye, setSelectedEmploye] = useState(null);
     const [editEmploye, setEditEmploye] = useState(null);
+    const [showAddModal, setShowAddModal] = useState(false);
+
+    const [newEmploye, setNewEmploye] = useState({
+        nom: "",
+        prenom: "",
+        email: "",
+        telephone: "",
+        salaireBase: "",
+        dateEmbauche: "",
+        quotaAnnuelConges: 22,
+        statut: "ACTIF",
+        typeContrat: "CDI",
+        departementId: "",
+        posteId: "",
+    });
+
+    const postesParDepartement = {
+        1: [1],
+        2: [2],
+        3: [3],
+        4: [4],
+        5: [5],
+        6: [6],
+    };
+
+    const getPostesFiltres = (departementId) => {
+        if (!departementId) {
+            return [];
+        }
+
+        const idsPostesAutorises = postesParDepartement[Number(departementId)] || [];
+
+        return postes.filter((poste) =>
+            idsPostesAutorises.includes(Number(poste.id))
+        );
+    };
 
     const fetchEmployes = async () => {
         try {
             const data = await getAllEmployes();
-            setEmployes(data);
+            const sortedData = [...data].sort((a, b) => b.id - a.id);
+            setEmployes(sortedData);
         } catch (error) {
             console.error("Erreur chargement employés", error);
         }
@@ -60,14 +103,92 @@ function EmployesRH() {
             ${employe.statut || ""}
         `.toLowerCase();
 
-        return fullText.includes(search);
+        const matchSearch = fullText.includes(search);
+
+        const matchDepartement =
+            departementFilter === "TOUS" ||
+            String(employe.departementId) === String(departementFilter);
+
+        const matchContrat =
+            contratFilter === "TOUS" ||
+            employe.typeContrat === contratFilter;
+
+        const matchStatut =
+            statutFilter === "TOUS" ||
+            employe.statut === statutFilter;
+
+        return matchSearch && matchDepartement && matchContrat && matchStatut;
     });
 
     const handleEditChange = (field, value) => {
+        if (field === "departementId") {
+            setEditEmploye({
+                ...editEmploye,
+                departementId: value,
+                posteId: "",
+            });
+            return;
+        }
+
         setEditEmploye({
             ...editEmploye,
             [field]: value,
         });
+    };
+
+    const handleNewEmployeChange = (field, value) => {
+        if (field === "departementId") {
+            setNewEmploye({
+                ...newEmploye,
+                departementId: value,
+                posteId: "",
+            });
+            return;
+        }
+
+        setNewEmploye({
+            ...newEmploye,
+            [field]: value,
+        });
+    };
+
+    const resetNewEmployeForm = () => {
+        setNewEmploye({
+            nom: "",
+            prenom: "",
+            email: "",
+            telephone: "",
+            salaireBase: "",
+            dateEmbauche: "",
+            quotaAnnuelConges: 22,
+            statut: "ACTIF",
+            typeContrat: "CDI",
+            departementId: "",
+            posteId: "",
+        });
+    };
+
+    const handleCreateEmploye = async (e) => {
+        e.preventDefault();
+
+        try {
+            const employeToCreate = {
+                ...newEmploye,
+                salaireBase: Number(newEmploye.salaireBase),
+                quotaAnnuelConges: Number(newEmploye.quotaAnnuelConges),
+                departementId: Number(newEmploye.departementId),
+                posteId: Number(newEmploye.posteId),
+            };
+
+            await createEmploye(employeToCreate);
+
+            setShowAddModal(false);
+            resetNewEmployeForm();
+            fetchEmployes();
+        } catch (error) {
+            console.error("Erreur création employé", error);
+            alert("Erreur lors de la création de l'employé.");
+        }
     };
 
     const handleUpdateEmploye = async (e) => {
@@ -76,10 +197,10 @@ function EmployesRH() {
         try {
             const employeToUpdate = {
                 ...editEmploye,
-                departementId: Number(editEmploye.departementId),
-                posteId: Number(editEmploye.posteId),
                 salaireBase: Number(editEmploye.salaireBase),
                 quotaAnnuelConges: Number(editEmploye.quotaAnnuelConges),
+                departementId: Number(editEmploye.departementId),
+                posteId: Number(editEmploye.posteId),
             };
 
             await updateEmploye(editEmploye.id, employeToUpdate);
@@ -94,11 +215,11 @@ function EmployesRH() {
     };
 
     const handleDesactiver = async (employe) => {
-        const confirm = window.confirm(
+        const confirmAction = window.confirm(
             `Voulez-vous vraiment désactiver ${employe.prenom} ${employe.nom} ?`
         );
 
-        if (!confirm) return;
+        if (!confirmAction) return;
 
         try {
             await desactiverEmploye(employe.id);
@@ -122,7 +243,12 @@ function EmployesRH() {
 
                     <div className="sidebar-item active">Employés</div>
 
-                    <div className="sidebar-item">Congés</div>
+                    <div
+                        className="sidebar-item"
+                        onClick={() => navigate("/rh/conges")}
+                    >
+                        Congés
+                    </div>
 
                     <div className="sidebar-item">Salaires</div>
 
@@ -150,10 +276,20 @@ function EmployesRH() {
                         <div>
                             <h2>Liste des employés</h2>
                             <p className="section-subtitle">
-                                Cliquez sur un employé pour consulter sa fiche détaillée.
+                                Recherchez et filtrez les employés par département, contrat ou statut.
                             </p>
                         </div>
 
+                        <button
+                            className="action-button"
+                            type="button"
+                            onClick={() => setShowAddModal(true)}
+                        >
+                            Ajouter un employé
+                        </button>
+                    </div>
+
+                    <div className="filters-row employee-filters">
                         <input
                             className="search-input"
                             type="text"
@@ -161,6 +297,41 @@ function EmployesRH() {
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
+
+                        <select
+                            className="filter-select"
+                            value={departementFilter}
+                            onChange={(e) => setDepartementFilter(e.target.value)}
+                        >
+                            <option value="TOUS">Tous les départements</option>
+
+                            {departements.map((departement) => (
+                                <option key={departement.id} value={departement.id}>
+                                    {departement.nom}
+                                </option>
+                            ))}
+                        </select>
+
+                        <select
+                            className="filter-select"
+                            value={contratFilter}
+                            onChange={(e) => setContratFilter(e.target.value)}
+                        >
+                            <option value="TOUS">Tous les contrats</option>
+                            <option value="CDI">CDI</option>
+                            <option value="CDD">CDD</option>
+                            <option value="STAGE">STAGE</option>
+                        </select>
+
+                        <select
+                            className="filter-select"
+                            value={statutFilter}
+                            onChange={(e) => setStatutFilter(e.target.value)}
+                        >
+                            <option value="TOUS">Tous les statuts</option>
+                            <option value="ACTIF">Actif</option>
+                            <option value="INACTIF">Inactif</option>
+                        </select>
                     </div>
 
                     <div className="table-container">
@@ -227,9 +398,7 @@ function EmployesRH() {
                     <div className="modal-card large">
                         <div className="modal-header">
                             <div>
-                                <h2>
-                                    {selectedEmploye.prenom} {selectedEmploye.nom}
-                                </h2>
+                                <h2>{selectedEmploye.prenom} {selectedEmploye.nom}</h2>
                                 <p>Fiche détaillée de l’employé</p>
                             </div>
 
@@ -310,6 +479,15 @@ function EmployesRH() {
                             </div>
 
                             <div className="form-field">
+                                <label>Email professionnel</label>
+                                <input
+                                    type="email"
+                                    value={editEmploye.email || ""}
+                                    onChange={(e) => handleEditChange("email", e.target.value)}
+                                />
+                            </div>
+
+                            <div className="form-field">
                                 <label>Téléphone</label>
                                 <input
                                     value={editEmploye.telephone || ""}
@@ -371,9 +549,7 @@ function EmployesRH() {
                                 <label>Département</label>
                                 <select
                                     value={editEmploye.departementId || ""}
-                                    onChange={(e) =>
-                                        handleEditChange("departementId", e.target.value)
-                                    }
+                                    onChange={(e) => handleEditChange("departementId", e.target.value)}
                                 >
                                     <option value="">Sélectionner un département</option>
 
@@ -389,13 +565,12 @@ function EmployesRH() {
                                 <label>Poste</label>
                                 <select
                                     value={editEmploye.posteId || ""}
-                                    onChange={(e) =>
-                                        handleEditChange("posteId", e.target.value)
-                                    }
+                                    onChange={(e) => handleEditChange("posteId", e.target.value)}
+                                    disabled={!editEmploye.departementId}
                                 >
                                     <option value="">Sélectionner un poste</option>
 
-                                    {postes.map((poste) => (
+                                    {getPostesFiltres(editEmploye.departementId).map((poste) => (
                                         <option key={poste.id} value={poste.id}>
                                             {poste.libelle}
                                         </option>
@@ -412,6 +587,173 @@ function EmployesRH() {
                                     type="button"
                                     className="action-button secondary"
                                     onClick={() => setEditEmploye(null)}
+                                >
+                                    Annuler
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {showAddModal && (
+                <div className="modal-overlay">
+                    <div className="modal-card large">
+                        <div className="modal-header">
+                            <div>
+                                <h2>Ajouter un employé</h2>
+                                <p>Création d’une nouvelle fiche employé.</p>
+                            </div>
+
+                            <button
+                                className="modal-close"
+                                onClick={() => {
+                                    setShowAddModal(false);
+                                    resetNewEmployeForm();
+                                }}
+                            >
+                                ×
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleCreateEmploye} className="form-grid">
+                            <div className="form-field">
+                                <label>Nom</label>
+                                <input
+                                    value={newEmploye.nom}
+                                    onChange={(e) => handleNewEmployeChange("nom", e.target.value)}
+                                    required
+                                />
+                            </div>
+
+                            <div className="form-field">
+                                <label>Prénom</label>
+                                <input
+                                    value={newEmploye.prenom}
+                                    onChange={(e) => handleNewEmployeChange("prenom", e.target.value)}
+                                    required
+                                />
+                            </div>
+
+                            <div className="form-field">
+                                <label>Email professionnel</label>
+                                <input
+                                    type="email"
+                                    value={newEmploye.email}
+                                    onChange={(e) => handleNewEmployeChange("email", e.target.value)}
+                                    required
+                                />
+                            </div>
+
+                            <div className="form-field">
+                                <label>Téléphone</label>
+                                <input
+                                    value={newEmploye.telephone}
+                                    onChange={(e) => handleNewEmployeChange("telephone", e.target.value)}
+                                    required
+                                />
+                            </div>
+
+                            <div className="form-field">
+                                <label>Salaire de base</label>
+                                <input
+                                    type="number"
+                                    value={newEmploye.salaireBase}
+                                    onChange={(e) => handleNewEmployeChange("salaireBase", e.target.value)}
+                                    required
+                                />
+                            </div>
+
+                            <div className="form-field">
+                                <label>Date d’embauche</label>
+                                <input
+                                    type="date"
+                                    value={newEmploye.dateEmbauche}
+                                    onChange={(e) => handleNewEmployeChange("dateEmbauche", e.target.value)}
+                                    required
+                                />
+                            </div>
+
+                            <div className="form-field">
+                                <label>Quota annuel congés</label>
+                                <input
+                                    type="number"
+                                    value={newEmploye.quotaAnnuelConges}
+                                    onChange={(e) => handleNewEmployeChange("quotaAnnuelConges", e.target.value)}
+                                    required
+                                />
+                            </div>
+
+                            <div className="form-field">
+                                <label>Type de contrat</label>
+                                <select
+                                    value={newEmploye.typeContrat}
+                                    onChange={(e) => handleNewEmployeChange("typeContrat", e.target.value)}
+                                >
+                                    <option value="CDI">CDI</option>
+                                    <option value="CDD">CDD</option>
+                                    <option value="STAGE">STAGE</option>
+                                </select>
+                            </div>
+
+                            <div className="form-field">
+                                <label>Statut</label>
+                                <select
+                                    value={newEmploye.statut}
+                                    onChange={(e) => handleNewEmployeChange("statut", e.target.value)}
+                                >
+                                    <option value="ACTIF">ACTIF</option>
+                                    <option value="INACTIF">INACTIF</option>
+                                </select>
+                            </div>
+
+                            <div className="form-field">
+                                <label>Département</label>
+                                <select
+                                    value={newEmploye.departementId}
+                                    onChange={(e) => handleNewEmployeChange("departementId", e.target.value)}
+                                    required
+                                >
+                                    <option value="">Sélectionner un département</option>
+
+                                    {departements.map((departement) => (
+                                        <option key={departement.id} value={departement.id}>
+                                            {departement.nom}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="form-field">
+                                <label>Poste</label>
+                                <select
+                                    value={newEmploye.posteId}
+                                    onChange={(e) => handleNewEmployeChange("posteId", e.target.value)}
+                                    required
+                                    disabled={!newEmploye.departementId}
+                                >
+                                    <option value="">Sélectionner un poste</option>
+
+                                    {getPostesFiltres(newEmploye.departementId).map((poste) => (
+                                        <option key={poste.id} value={poste.id}>
+                                            {poste.libelle}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="modal-actions full-width">
+                                <button type="submit" className="action-button">
+                                    Ajouter
+                                </button>
+
+                                <button
+                                    type="button"
+                                    className="action-button secondary"
+                                    onClick={() => {
+                                        setShowAddModal(false);
+                                        resetNewEmployeForm();
+                                    }}
                                 >
                                     Annuler
                                 </button>

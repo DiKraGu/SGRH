@@ -60,6 +60,7 @@ public class EmployeService {
 
         employe.setNom(dto.getNom());
         employe.setPrenom(dto.getPrenom());
+        employe.setEmail(dto.getEmail());
         employe.setTelephone(dto.getTelephone());
         employe.setSalaireBase(dto.getSalaireBase());
         employe.setDateEmbauche(dto.getDateEmbauche());

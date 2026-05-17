@@ -45,7 +45,10 @@ function DashboardRH() {
                         Employés
                     </div>
 
-                    <div className="sidebar-item">
+                    <div
+                        className="sidebar-item"
+                        onClick={() => navigate("/rh/conges")}
+                    >
                         Congés
                     </div>
 
@@ -121,7 +124,10 @@ function DashboardRH() {
                             Voir les candidatures
                         </button>
 
-                        <button className="action-button secondary">
+                        <button
+                            className="action-button secondary"
+                            onClick={() => navigate("/rh/conges")}
+                        >
                             Traiter les congés
                         </button>
 

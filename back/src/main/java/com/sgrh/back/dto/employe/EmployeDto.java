@@ -15,30 +15,17 @@ import java.time.LocalDate;
 public class EmployeDto {
 
     private Long id;
-
     private String nom;
-
     private String prenom;
-
     private String email;
-
     private String telephone;
-
     private BigDecimal salaireBase;
-
     private LocalDate dateEmbauche;
-
     private Integer quotaAnnuelConges;
-
     private StatutEmploye statut;
-
     private TypeContrat typeContrat;
-
     private Long departementId;
-
     private String departementNom;
-
     private Long posteId;
-
     private String posteLibelle;
 }

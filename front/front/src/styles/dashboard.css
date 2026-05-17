@@ -2,6 +2,12 @@
     box-sizing: border-box;
 }
 
+body {
+    margin: 0;
+    background: #f1f5f9;
+    font-family: Arial, sans-serif;
+}
+
 .dashboard-layout {
     min-height: 100vh;
     display: flex;
@@ -144,6 +150,16 @@
     font-size: 14px;
 }
 
+.filters-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.search-wrapper {
+    flex: 1;
+}
+
 .search-input {
     width: 320px;
     padding: 13px 15px;
@@ -151,9 +167,33 @@
     border-radius: 12px;
     outline: none;
     font-size: 14px;
+    background: white;
 }
 
 .search-input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.select-wrapper {
+    min-width: 220px;
+    position: relative;
+}
+
+.filter-select {
+    width: 100%;
+    padding: 13px 15px;
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
+    outline: none;
+    font-size: 14px;
+    background: white;
+    color: #0f172a;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.filter-select:focus {
     border-color: #2563eb;
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
@@ -201,8 +241,6 @@
     background: #b91c1c;
 }
 
-/* TABLES */
-
 .table-container {
     width: 100%;
     overflow-x: auto;
@@ -237,8 +275,6 @@
 .clickable-table tbody tr:hover {
     background: #f8fafc;
 }
-
-/* BADGES */
 
 .status-badge {
     padding: 7px 12px;
@@ -278,7 +314,20 @@
     color: #b91c1c;
 }
 
-/* ACTIONS TABLE */
+.status-badge.VALIDE {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.status-badge.EN_ATTENTE {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.status-badge.REFUSE {
+    background: #e2e8f0;
+    color: #0f172a;
+}
 
 .table-actions {
     display: flex;
@@ -306,8 +355,6 @@
     color: #b91c1c;
 }
 
-/* LINKS / FILES */
-
 .email-link {
     color: #1d4ed8;
     font-weight: 600;
@@ -332,16 +379,12 @@
     opacity: 0.85;
 }
 
-/* EMPTY STATE */
-
 .empty-state {
     padding: 28px;
     text-align: center;
     color: #64748b;
     font-weight: 600;
 }
-
-/* MODALS */
 
 .modal-overlay {
     position: fixed;
@@ -428,11 +471,13 @@
 
 .form-grid input,
 .form-grid select {
+    width: 100%;
     padding: 13px 14px;
     border: 1px solid #cbd5e1;
     border-radius: 10px;
     outline: none;
     font-size: 14px;
+    background: white;
 }
 
 .form-grid input:focus,
@@ -451,8 +496,6 @@
     grid-column: 1 / -1;
 }
 
-/* RESPONSIVE */
-
 @media (max-width: 900px) {
     .dashboard-layout {
         flex-direction: column;
@@ -469,6 +512,12 @@
     .section-header {
         flex-direction: column;
         align-items: flex-start;
+    }
+
+    .filters-row {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
     }
 
     .search-input {

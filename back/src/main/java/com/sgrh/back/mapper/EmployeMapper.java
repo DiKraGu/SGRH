@@ -12,15 +12,17 @@ public class EmployeMapper {
             return null;
         }
 
+        String emailAffiche = employe.getEmail();
+
+        if ((emailAffiche == null || emailAffiche.isBlank()) && employe.getUtilisateur() != null) {
+            emailAffiche = employe.getUtilisateur().getEmail();
+        }
+
         return EmployeDto.builder()
                 .id(employe.getId())
                 .nom(employe.getNom())
                 .prenom(employe.getPrenom())
-                .email(
-                        employe.getUtilisateur() != null
-                                ? employe.getUtilisateur().getEmail()
-                                : null
-                )
+                .email(emailAffiche)
                 .telephone(employe.getTelephone())
                 .salaireBase(employe.getSalaireBase())
                 .dateEmbauche(employe.getDateEmbauche())
@@ -43,6 +45,7 @@ public class EmployeMapper {
                 .id(dto.getId())
                 .nom(dto.getNom())
                 .prenom(dto.getPrenom())
+                .email(dto.getEmail())
                 .telephone(dto.getTelephone())
                 .salaireBase(dto.getSalaireBase())
                 .dateEmbauche(dto.getDateEmbauche())

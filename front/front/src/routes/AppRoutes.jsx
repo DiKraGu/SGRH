@@ -7,6 +7,7 @@ import DashboardEmploye from "../pages/DashboardEmploye";
 import Unauthorized from "../pages/Unauthorized";
 import CandidaturesRH from "../pages/CandidaturesRH";
 import EmployesRH from "../pages/EmployesRH";
+import CongesRH from "../pages/CongesRH";
 import ProtectedRoute from "./ProtectedRoute";
 
 function AppRoutes() {
@@ -38,6 +39,15 @@ function AppRoutes() {
                     element={
                         <ProtectedRoute allowedRoles={["RH"]}>
                             <EmployesRH />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/rh/conges"
+                    element={
+                        <ProtectedRoute allowedRoles={["RH"]}>
+                            <CongesRH />
                         </ProtectedRoute>
                     }
                 />
