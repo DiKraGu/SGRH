@@ -16,6 +16,11 @@ public class EmployeMapper {
                 .id(employe.getId())
                 .nom(employe.getNom())
                 .prenom(employe.getPrenom())
+                .email(
+                        employe.getUtilisateur() != null
+                                ? employe.getUtilisateur().getEmail()
+                                : null
+                )
                 .telephone(employe.getTelephone())
                 .salaireBase(employe.getSalaireBase())
                 .dateEmbauche(employe.getDateEmbauche())

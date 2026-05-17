@@ -10,10 +10,15 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/employes")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "http://localhost:5173")
 public class EmployeController {
 
     private final EmployeService employeService;
+
+    @PostMapping
+    public EmployeDto createEmploye(@RequestBody EmployeDto dto) {
+        return employeService.createEmploye(dto);
+    }
 
     @GetMapping
     public List<EmployeDto> getAllEmployes() {
@@ -25,14 +30,17 @@ public class EmployeController {
         return employeService.getEmployeById(id);
     }
 
-    @PostMapping
-    public EmployeDto createEmploye(@RequestBody EmployeDto employeDto) {
-        return employeService.createEmploye(employeDto);
+    @PutMapping("/{id}")
+    public EmployeDto updateEmploye(
+            @PathVariable Long id,
+            @RequestBody EmployeDto dto
+    ) {
+        return employeService.updateEmploye(id, dto);
     }
 
-    @PutMapping("/{id}")
-    public EmployeDto updateEmploye(@PathVariable Long id, @RequestBody EmployeDto employeDto) {
-        return employeService.updateEmploye(id, employeDto);
+    @PutMapping("/{id}/desactiver")
+    public EmployeDto desactiverEmploye(@PathVariable Long id) {
+        return employeService.desactiverEmploye(id);
     }
 
     @DeleteMapping("/{id}")

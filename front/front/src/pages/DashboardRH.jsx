@@ -34,10 +34,25 @@ function DashboardRH() {
                 <div className="sidebar-logo">SGRH</div>
 
                 <div className="sidebar-menu">
-                    <div className="sidebar-item active">Tableau de bord</div>
-                    <div className="sidebar-item">Employés</div>
-                    <div className="sidebar-item">Congés</div>
-                    <div className="sidebar-item">Salaires</div>
+                    <div className="sidebar-item active">
+                        Tableau de bord
+                    </div>
+
+                    <div
+                        className="sidebar-item"
+                        onClick={() => navigate("/rh/employes")}
+                    >
+                        Employés
+                    </div>
+
+                    <div className="sidebar-item">
+                        Congés
+                    </div>
+
+                    <div className="sidebar-item">
+                        Salaires
+                    </div>
+
                     <div
                         className="sidebar-item"
                         onClick={() => navigate("/rh/candidatures")}
@@ -110,7 +125,10 @@ function DashboardRH() {
                             Traiter les congés
                         </button>
 
-                        <button className="action-button secondary">
+                        <button
+                            className="action-button secondary"
+                            onClick={() => navigate("/rh/employes")}
+                        >
                             Gérer les employés
                         </button>
                     </div>

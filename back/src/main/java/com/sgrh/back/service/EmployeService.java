@@ -22,6 +22,18 @@ public class EmployeService {
     private final DepartementRepository departementRepository;
     private final PosteRepository posteRepository;
 
+    public EmployeDto createEmploye(EmployeDto dto) {
+        Departement departement = departementRepository.findById(dto.getDepartementId())
+                .orElseThrow(() -> new RuntimeException("Département introuvable"));
+
+        Poste poste = posteRepository.findById(dto.getPosteId())
+                .orElseThrow(() -> new RuntimeException("Poste introuvable"));
+
+        Employe employe = EmployeMapper.toEntity(dto, departement, poste);
+
+        return EmployeMapper.toDto(employeRepository.save(employe));
+    }
+
     public List<EmployeDto> getAllEmployes() {
         return employeRepository.findAll()
                 .stream()
@@ -34,24 +46,6 @@ public class EmployeService {
                 .orElseThrow(() -> new RuntimeException("Employé introuvable"));
 
         return EmployeMapper.toDto(employe);
-    }
-
-    public EmployeDto createEmploye(EmployeDto dto) {
-        Departement departement = departementRepository.findById(dto.getDepartementId())
-                .orElseThrow(() -> new RuntimeException("Département introuvable"));
-
-        Poste poste = posteRepository.findById(dto.getPosteId())
-                .orElseThrow(() -> new RuntimeException("Poste introuvable"));
-
-        Employe employe = EmployeMapper.toEntity(dto, departement, poste);
-
-        if (employe.getStatut() == null) {
-            employe.setStatut(StatutEmploye.ACTIF);
-        }
-
-        Employe saved = employeRepository.save(employe);
-
-        return EmployeMapper.toDto(saved);
     }
 
     public EmployeDto updateEmploye(Long id, EmployeDto dto) {
@@ -78,11 +72,19 @@ public class EmployeService {
         return EmployeMapper.toDto(employeRepository.save(employe));
     }
 
-    public void deleteEmploye(Long id) {
+    public EmployeDto desactiverEmploye(Long id) {
         Employe employe = employeRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Employé introuvable"));
 
         employe.setStatut(StatutEmploye.INACTIF);
-        employeRepository.save(employe);
+
+        return EmployeMapper.toDto(employeRepository.save(employe));
+    }
+
+    public void deleteEmploye(Long id) {
+        Employe employe = employeRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Employé introuvable"));
+
+        employeRepository.delete(employe);
     }
 }

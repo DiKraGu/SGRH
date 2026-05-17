@@ -1,5 +1,6 @@
 package com.sgrh.back.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.sgrh.back.enums.StatutEmploye;
 import com.sgrh.back.enums.TypeContrat;
 import jakarta.persistence.*;
@@ -53,4 +54,8 @@ public class Employe {
     @ManyToOne
     @JoinColumn(name = "poste_id", nullable = false)
     private Poste poste;
+
+    @JsonIgnore
+    @OneToOne(mappedBy = "employe")
+    private Utilisateur utilisateur;
 }
