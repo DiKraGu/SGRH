@@ -5,45 +5,61 @@ import {
     validerConge,
     refuserConge,
 } from "../services/congeService";
-
+import { getEmployeById } from "../services/employeService";
 import "../styles/dashboard.css";
 
 function CongesRH() {
-
     const navigate = useNavigate();
-
     const email = localStorage.getItem("email");
 
     const [conges, setConges] = useState([]);
-
     const [searchTerm, setSearchTerm] = useState("");
-
     const [statutFilter, setStatutFilter] = useState("TOUS");
-
+    const [typeFilter, setTypeFilter] = useState("TOUS");
     const [selectedConge, setSelectedConge] = useState(null);
+    const [selectedEmploye, setSelectedEmploye] = useState(null);
 
     const fetchConges = async () => {
-
         try {
-
             const data = await getAllConges();
-
-            setConges(data);
-
+            const sortedData = [...data].sort((a, b) => b.id - a.id);
+            setConges(sortedData);
         } catch (error) {
-
             console.error("Erreur chargement congés", error);
         }
     };
 
     useEffect(() => {
-
         fetchConges();
-
     }, []);
 
-    const filteredConges = conges.filter((conge) => {
+    const getStatutLabel = (statut) => {
+        switch (statut) {
+            case "EN_ATTENTE":
+                return "En attente";
+            case "VALIDE":
+                return "Validé";
+            case "REFUSE":
+                return "Refusé";
+            default:
+                return statut;
+        }
+    };
 
+    const getTypeLabel = (type) => {
+        switch (type) {
+            case "ANNUEL":
+                return "Congé annuel";
+            case "MALADIE":
+                return "Congé maladie";
+            case "EXCEPTIONNEL":
+                return "Congé exceptionnel";
+            default:
+                return type;
+        }
+    };
+
+    const filteredConges = conges.filter((conge) => {
         const search = searchTerm.toLowerCase();
 
         const fullText = `
@@ -52,19 +68,34 @@ function CongesRH() {
             ${conge.motif || ""}
             ${conge.typeConge || ""}
             ${conge.statut || ""}
+            ${conge.dateDebut || ""}
+            ${conge.dateFin || ""}
         `.toLowerCase();
 
         const matchSearch = fullText.includes(search);
 
         const matchStatut =
-            statutFilter === "TOUS" ||
-            conge.statut === statutFilter;
+            statutFilter === "TOUS" || conge.statut === statutFilter;
 
-        return matchSearch && matchStatut;
+        const matchType =
+            typeFilter === "TOUS" || conge.typeConge === typeFilter;
+
+        return matchSearch && matchStatut && matchType;
     });
 
-    const handleValider = async (conge) => {
+    const handleOpenConge = async (conge) => {
+        setSelectedConge(conge);
 
+        try {
+            const employe = await getEmployeById(conge.employeId);
+            setSelectedEmploye(employe);
+        } catch (error) {
+            console.error("Erreur chargement employé lié au congé", error);
+            setSelectedEmploye(null);
+        }
+    };
+
+    const handleValider = async (conge) => {
         const confirmAction = window.confirm(
             `Valider le congé de ${conge.employePrenom} ${conge.employeNom} ?`
         );
@@ -72,23 +103,17 @@ function CongesRH() {
         if (!confirmAction) return;
 
         try {
-
             await validerConge(conge.id);
-
             setSelectedConge(null);
-
+            setSelectedEmploye(null);
             fetchConges();
-
         } catch (error) {
-
             console.error("Erreur validation congé", error);
-
             alert("Erreur : quota insuffisant ou demande déjà traitée.");
         }
     };
 
     const handleRefuser = async (conge) => {
-
         const confirmAction = window.confirm(
             `Refuser le congé de ${conge.employePrenom} ${conge.employeNom} ?`
         );
@@ -96,37 +121,23 @@ function CongesRH() {
         if (!confirmAction) return;
 
         try {
-
             await refuserConge(conge.id);
-
             setSelectedConge(null);
-
+            setSelectedEmploye(null);
             fetchConges();
-
         } catch (error) {
-
             console.error("Erreur refus congé", error);
-
             alert("Erreur lors du refus de la demande.");
         }
     };
 
     return (
-
         <div className="dashboard-layout">
-
             <aside className="sidebar">
-
-                <div className="sidebar-logo">
-                    SGRH
-                </div>
+                <div className="sidebar-logo">SGRH</div>
 
                 <div className="sidebar-menu">
-
-                    <div
-                        className="sidebar-item"
-                        onClick={() => navigate("/rh")}
-                    >
+                    <div className="sidebar-item" onClick={() => navigate("/rh")}>
                         Tableau de bord
                     </div>
 
@@ -137,13 +148,9 @@ function CongesRH() {
                         Employés
                     </div>
 
-                    <div className="sidebar-item active">
-                        Congés
-                    </div>
+                    <div className="sidebar-item active">Congés</div>
 
-                    <div className="sidebar-item">
-                        Salaires
-                    </div>
+                    <div className="sidebar-item">Salaires</div>
 
                     <div
                         className="sidebar-item"
@@ -151,98 +158,64 @@ function CongesRH() {
                     >
                         Recrutement
                     </div>
-
                 </div>
-
             </aside>
 
             <main className="dashboard-content">
-
                 <div className="dashboard-header">
-
                     <div className="dashboard-title">
-
                         <h1>Congés</h1>
-
-                        <p>
-                            Traitement et suivi des demandes de congés.
-                        </p>
-
+                        <p>Traitement et suivi des demandes de congés.</p>
                     </div>
 
-                    <div className="dashboard-user">
-                        {email}
-                    </div>
-
+                    <div className="dashboard-user">{email}</div>
                 </div>
 
                 <div className="section-card">
-
                     <div className="section-header">
-
                         <div>
-
-                            <h2>
-                                Demandes de congés
-                            </h2>
-
+                            <h2>Demandes de congés</h2>
                             <p className="section-subtitle">
-                                Cliquez sur une demande pour consulter les détails.
+                                Cliquez sur une demande pour consulter les détails et le quota restant.
                             </p>
-
                         </div>
+                    </div>
 
-                        <div className="filters-row">
+                    <div className="filters-row employee-filters">
+                        <input
+                            className="search-input"
+                            type="text"
+                            placeholder="Rechercher employé, motif ou date..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
 
-                            <div className="search-wrapper">
+                        <select
+                            className="filter-select"
+                            value={statutFilter}
+                            onChange={(e) => setStatutFilter(e.target.value)}
+                        >
+                            <option value="TOUS">Tous les statuts</option>
+                            <option value="EN_ATTENTE">En attente</option>
+                            <option value="VALIDE">Validé</option>
+                            <option value="REFUSE">Refusé</option>
+                        </select>
 
-                                <input
-                                    className="search-input"
-                                    type="text"
-                                    placeholder="Rechercher un employé ou motif..."
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                />
-
-                            </div>
-
-                            <div className="select-wrapper">
-
-                                <select
-                                    className="filter-select"
-                                    value={statutFilter}
-                                    onChange={(e) => setStatutFilter(e.target.value)}
-                                >
-                                    <option value="TOUS">
-                                        Tous les statuts
-                                    </option>
-
-                                    <option value="EN_ATTENTE">
-                                        En attente
-                                    </option>
-
-                                    <option value="VALIDE">
-                                        Validé
-                                    </option>
-
-                                    <option value="REFUSE">
-                                        Refusé
-                                    </option>
-
-                                </select>
-
-                            </div>
-
-                        </div>
-
+                        <select
+                            className="filter-select"
+                            value={typeFilter}
+                            onChange={(e) => setTypeFilter(e.target.value)}
+                        >
+                            <option value="TOUS">Tous les types</option>
+                            <option value="ANNUEL">Congé annuel</option>
+                            <option value="MALADIE">Congé maladie</option>
+                            <option value="EXCEPTIONNEL">Congé exceptionnel</option>
+                        </select>
                     </div>
 
                     <div className="table-container">
-
                         <table className="data-table clickable-table">
-
                             <thead>
-
                                 <tr>
                                     <th>Employé</th>
                                     <th>Type</th>
@@ -252,106 +225,71 @@ function CongesRH() {
                                     <th>Motif</th>
                                     <th>Statut</th>
                                 </tr>
-
                             </thead>
 
                             <tbody>
-
                                 {filteredConges.map((conge) => (
-
                                     <tr
                                         key={conge.id}
-                                        onClick={() => setSelectedConge(conge)}
+                                        onClick={() => handleOpenConge(conge)}
                                     >
-
                                         <td>
                                             {conge.employePrenom} {conge.employeNom}
                                         </td>
 
-                                        <td>
-                                            {conge.typeConge}
-                                        </td>
+                                        <td>{getTypeLabel(conge.typeConge)}</td>
+
+                                        <td>{conge.dateDebut}</td>
+
+                                        <td>{conge.dateFin}</td>
+
+                                        <td>{conge.nombreJours}</td>
+
+                                        <td>{conge.motif}</td>
 
                                         <td>
-                                            {conge.dateDebut}
-                                        </td>
-
-                                        <td>
-                                            {conge.dateFin}
-                                        </td>
-
-                                        <td>
-                                            {conge.nombreJours}
-                                        </td>
-
-                                        <td>
-                                            {conge.motif}
-                                        </td>
-
-                                        <td>
-
-                                            <span
-                                                className={`status-badge ${conge.statut}`}
-                                            >
-                                                {conge.statut}
+                                            <span className={`status-badge ${conge.statut}`}>
+                                                {getStatutLabel(conge.statut)}
                                             </span>
-
                                         </td>
-
                                     </tr>
-
                                 ))}
-
                             </tbody>
-
                         </table>
 
                         {filteredConges.length === 0 && (
-
                             <div className="empty-state">
                                 Aucune demande de congé trouvée.
                             </div>
-
                         )}
-
                     </div>
-
                 </div>
-
             </main>
 
             {selectedConge && (
-
                 <div className="modal-overlay">
-
                     <div className="modal-card large">
-
                         <div className="modal-header">
-
                             <div>
-
-                                <h2>
-                                    Détails de la demande
-                                </h2>
-
+                                <h2>Détails de la demande</h2>
                                 <p>
                                     {selectedConge.employePrenom}{" "}
                                     {selectedConge.employeNom}
                                 </p>
-
                             </div>
 
                             <button
                                 className="modal-close"
-                                onClick={() => setSelectedConge(null)}
+                                onClick={() => {
+                                    setSelectedConge(null);
+                                    setSelectedEmploye(null);
+                                }}
                             >
                                 ×
                             </button>
-
                         </div>
 
                         <div className="details-grid">
-
                             <p>
                                 <strong>Employé :</strong>{" "}
                                 {selectedConge.employePrenom}{" "}
@@ -360,7 +298,7 @@ function CongesRH() {
 
                             <p>
                                 <strong>Type :</strong>{" "}
-                                {selectedConge.typeConge}
+                                {getTypeLabel(selectedConge.typeConge)}
                             </p>
 
                             <p>
@@ -380,7 +318,7 @@ function CongesRH() {
 
                             <p>
                                 <strong>Statut :</strong>{" "}
-                                {selectedConge.statut}
+                                {getStatutLabel(selectedConge.statut)}
                             </p>
 
                             <p>
@@ -388,12 +326,16 @@ function CongesRH() {
                                 {selectedConge.motif}
                             </p>
 
+                            <p>
+                                <strong>Quota restant actuel :</strong>{" "}
+                                {selectedEmploye
+                                    ? `${selectedEmploye.quotaAnnuelConges} jours`
+                                    : "Chargement..."}
+                            </p>
                         </div>
 
-                        {selectedConge.statut === "EN_ATTENTE" && (
-
+                        {selectedConge.statut === "EN_ATTENTE" ? (
                             <div className="modal-actions">
-
                                 <button
                                     className="action-button"
                                     onClick={() => handleValider(selectedConge)}
@@ -407,17 +349,15 @@ function CongesRH() {
                                 >
                                     Refuser
                                 </button>
-
                             </div>
-
+                        ) : (
+                            <div className="empty-state">
+                                Cette demande a déjà été traitée.
+                            </div>
                         )}
-
                     </div>
-
                 </div>
-
             )}
-
         </div>
     );
 }
