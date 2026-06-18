@@ -3,6 +3,7 @@ package com.sgrh.back.controller;
 import com.sgrh.back.dto.employe.EmployeDto;
 import com.sgrh.back.service.EmployeService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,6 +24,11 @@ public class EmployeController {
     @GetMapping
     public List<EmployeDto> getAllEmployes() {
         return employeService.getAllEmployes();
+    }
+
+    @GetMapping("/me")
+    public EmployeDto getEmployeConnecte(Authentication authentication) {
+        return employeService.getEmployeConnecte(authentication.getName());
     }
 
     @GetMapping("/{id}")

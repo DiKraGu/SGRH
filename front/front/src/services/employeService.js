@@ -10,6 +10,11 @@ export const getEmployeById = async (id) => {
     return response.data;
 };
 
+export const getEmployeConnecte = async () => {
+    const response = await api.get("/employes/me");
+    return response.data;
+};
+
 export const createEmploye = async (employe) => {
     const response = await api.post("/employes", employe);
     return response.data;

@@ -7,6 +7,12 @@ import java.util.List;
 import java.util.Optional;
 
 public interface FichePaieRepository extends JpaRepository<FichePaie, Long> {
-    List<FichePaie> findByEmployeId(Long employeId);
-    Optional<FichePaie> findByEmployeIdAndMoisAndAnnee(Long employeId, Integer mois, Integer annee);
+
+    List<FichePaie> findByEmployeIdOrderByAnneeDescMoisDesc(Long employeId);
+
+    Optional<FichePaie> findByEmployeIdAndMoisAndAnnee(
+            Long employeId,
+            Integer mois,
+            Integer annee
+    );
 }

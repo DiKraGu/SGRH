@@ -5,9 +5,13 @@ import DashboardAdmin from "../pages/DashboardAdmin";
 import DashboardRH from "../pages/DashboardRH";
 import DashboardEmploye from "../pages/DashboardEmploye";
 import Unauthorized from "../pages/Unauthorized";
+
 import CandidaturesRH from "../pages/CandidaturesRH";
 import EmployesRH from "../pages/EmployesRH";
 import CongesRH from "../pages/CongesRH";
+import OffresEmploiRH from "../pages/OffresEmploiRH";
+import SalairesRH from "../pages/SalairesRH";
+
 import ProtectedRoute from "./ProtectedRoute";
 
 function AppRoutes() {
@@ -53,6 +57,15 @@ function AppRoutes() {
                 />
 
                 <Route
+                    path="/rh/offres"
+                    element={
+                        <ProtectedRoute allowedRoles={["RH"]}>
+                            <OffresEmploiRH />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
                     path="/rh/candidatures"
                     element={
                         <ProtectedRoute allowedRoles={["RH"]}>
@@ -69,9 +82,18 @@ function AppRoutes() {
                         </ProtectedRoute>
                     }
                 />
+                <Route
+    path="/rh/salaires"
+    element={
+        <ProtectedRoute allowedRoles={["RH"]}>
+            <SalairesRH />
+        </ProtectedRoute>
+    }
+/>
 
                 <Route path="/unauthorized" element={<Unauthorized />} />
             </Routes>
+            
         </BrowserRouter>
     );
 }

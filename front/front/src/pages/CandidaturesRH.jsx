@@ -11,11 +11,13 @@ function CandidaturesRH() {
     const email = localStorage.getItem("email");
 
     const [candidatures, setCandidatures] = useState([]);
+    const [statutFilter, setStatutFilter] = useState("TOUS");
 
     const fetchCandidatures = async () => {
         try {
             const data = await getAllCandidatures();
-            setCandidatures(data);
+            const sortedData = [...data].sort((a, b) => b.id - a.id);
+            setCandidatures(sortedData);
         } catch (error) {
             console.error("Erreur chargement candidatures", error);
         }
@@ -25,12 +27,21 @@ function CandidaturesRH() {
         fetchCandidatures();
     }, []);
 
-    const handleChangeStatut = async (id, statut) => {
+    const filteredCandidatures = candidatures.filter((candidature) => {
+        if (statutFilter === "TOUS") {
+            return true;
+        }
+
+        return candidature.statut === statutFilter;
+    });
+
+    const handleExaminer = async (id) => {
         try {
-            await updateCandidatureStatut(id, statut);
+            await updateCandidatureStatut(id, "EN_EXAMEN");
             fetchCandidatures();
         } catch (error) {
-            console.error("Erreur changement statut", error);
+            console.error("Erreur changement statut candidature", error);
+            alert("Erreur lors du passage de la candidature en examen.");
         }
     };
 
@@ -44,13 +55,31 @@ function CandidaturesRH() {
         window.open(url, "_blank");
     };
 
+    const getStatutLabel = (statut) => {
+        switch (statut) {
+            case "RECUE":
+                return "En attente";
+            case "EN_EXAMEN":
+                return "Examinée";
+            case "RETENUE":
+                return "Retenue";
+            case "REFUSEE":
+                return "Refusée";
+            default:
+                return statut;
+        }
+    };
+
     return (
         <div className="dashboard-layout">
             <aside className="sidebar">
                 <div className="sidebar-logo">SGRH</div>
 
                 <div className="sidebar-menu">
-                    <div className="sidebar-item" onClick={() => navigate("/rh")}>
+                    <div
+                        className="sidebar-item"
+                        onClick={() => navigate("/rh")}
+                    >
                         Tableau de bord
                     </div>
 
@@ -68,9 +97,23 @@ function CandidaturesRH() {
                         Congés
                     </div>
 
-                    <div className="sidebar-item">Salaires</div>
+                    <div
+    className="sidebar-item"
+    onClick={() => navigate("/rh/salaires")}
+>
+    Salaires
+</div>
 
-                    <div className="sidebar-item active">Recrutement</div>
+                    <div
+                        className="sidebar-item"
+                        onClick={() => navigate("/rh/offres")}
+                    >
+                        Offres d'emploi
+                    </div>
+
+                    <div className="sidebar-item active">
+                        Candidatures
+                    </div>
                 </div>
             </aside>
 
@@ -78,14 +121,33 @@ function CandidaturesRH() {
                 <div className="dashboard-header">
                     <div className="dashboard-title">
                         <h1>Candidatures</h1>
-                        <p>Suivi et traitement des candidatures reçues.</p>
+                        <p>Suivi et examen des candidatures reçues.</p>
                     </div>
 
-                    <div className="dashboard-user">{email}</div>
+                    <div className="dashboard-user">
+                        {email}
+                    </div>
                 </div>
 
                 <div className="section-card">
-                    <h2>Liste des candidatures</h2>
+                    <div className="section-header">
+                        <div>
+                            <h2>Liste des candidatures</h2>
+                            <p className="section-subtitle">
+                                Le RH consulte les CV et marque les candidatures comme examinées.
+                            </p>
+                        </div>
+
+                        <select
+                            className="filter-select"
+                            value={statutFilter}
+                            onChange={(e) => setStatutFilter(e.target.value)}
+                        >
+                            <option value="TOUS">Toutes les candidatures</option>
+                            <option value="RECUE">En attente</option>
+                            <option value="EN_EXAMEN">Examinées</option>
+                        </select>
+                    </div>
 
                     <div className="table-container">
                         <table className="data-table">
@@ -97,12 +159,12 @@ function CandidaturesRH() {
                                     <th>Offre</th>
                                     <th>CV</th>
                                     <th>Statut</th>
-                                    <th>Actions</th>
+                                    <th>Action RH</th>
                                 </tr>
                             </thead>
 
                             <tbody>
-                                {candidatures.map((candidature) => (
+                                {filteredCandidatures.map((candidature) => (
                                     <tr key={candidature.id}>
                                         <td>
                                             {candidature.prenom} {candidature.nom}
@@ -127,54 +189,32 @@ function CandidaturesRH() {
 
                                         <td>
                                             <span className={`status-badge ${candidature.statut}`}>
-                                                {candidature.statut}
+                                                {getStatutLabel(candidature.statut)}
                                             </span>
                                         </td>
 
                                         <td>
-                                            <div className="table-actions">
+                                            {candidature.statut === "RECUE" ? (
                                                 <button
+                                                    className="file-button"
                                                     onClick={() =>
-                                                        handleChangeStatut(
-                                                            candidature.id,
-                                                            "EN_EXAMEN"
-                                                        )
+                                                        handleExaminer(candidature.id)
                                                     }
                                                 >
                                                     Examiner
                                                 </button>
-
-                                                <button
-                                                    className="success"
-                                                    onClick={() =>
-                                                        handleChangeStatut(
-                                                            candidature.id,
-                                                            "RETENUE"
-                                                        )
-                                                    }
-                                                >
-                                                    Retenir
-                                                </button>
-
-                                                <button
-                                                    className="danger"
-                                                    onClick={() =>
-                                                        handleChangeStatut(
-                                                            candidature.id,
-                                                            "REFUSEE"
-                                                        )
-                                                    }
-                                                >
-                                                    Refuser
-                                                </button>
-                                            </div>
+                                            ) : (
+                                                <span className="text-muted">
+                                                    Déjà examinée
+                                                </span>
+                                            )}
                                         </td>
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
 
-                        {candidatures.length === 0 && (
+                        {filteredCandidatures.length === 0 && (
                             <div className="empty-state">
                                 Aucune candidature trouvée.
                             </div>

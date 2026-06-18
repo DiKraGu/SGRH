@@ -10,15 +10,10 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/fiches-paie")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "http://localhost:5173")
 public class FichePaieController {
 
     private final FichePaieService fichePaieService;
-
-    @PostMapping
-    public FichePaieDto createFichePaie(@RequestBody FichePaieDto dto) {
-        return fichePaieService.createFichePaie(dto);
-    }
 
     @GetMapping
     public List<FichePaieDto> getAllFichesPaie() {
@@ -26,13 +21,18 @@ public class FichePaieController {
     }
 
     @GetMapping("/{id}")
-    public FichePaieDto getFicheById(@PathVariable Long id) {
-        return fichePaieService.getFicheById(id);
+    public FichePaieDto getFichePaieById(@PathVariable Long id) {
+        return fichePaieService.getFichePaieById(id);
     }
 
     @GetMapping("/employe/{employeId}")
     public List<FichePaieDto> getFichesByEmploye(@PathVariable Long employeId) {
         return fichePaieService.getFichesByEmploye(employeId);
+    }
+
+    @PostMapping
+    public FichePaieDto createFichePaie(@RequestBody FichePaieDto dto) {
+        return fichePaieService.createFichePaie(dto);
     }
 
     @DeleteMapping("/{id}")

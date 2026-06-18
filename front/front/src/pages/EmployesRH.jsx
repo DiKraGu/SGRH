@@ -249,15 +249,26 @@ function EmployesRH() {
                     >
                         Congés
                     </div>
+<div
+    className="sidebar-item"
+    onClick={() => navigate("/rh/salaires")}
+>
+    Salaires
+</div>
 
-                    <div className="sidebar-item">Salaires</div>
+<div
+    className="sidebar-item"
+    onClick={() => navigate("/rh/offres")}
+>
+    Offres d'emploi
+</div>
 
-                    <div
-                        className="sidebar-item"
-                        onClick={() => navigate("/rh/candidatures")}
-                    >
-                        Recrutement
-                    </div>
+<div
+    className="sidebar-item"
+    onClick={() => navigate("/rh/candidatures")}
+>
+    Candidatures
+</div>
                 </div>
             </aside>
 

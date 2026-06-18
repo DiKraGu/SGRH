@@ -76,6 +76,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/register")
                         .hasAuthority("ROLE_ADMIN")
 
+                        .requestMatchers("/api/employes/me")
+                        .hasAnyAuthority("ROLE_ADMIN", "ROLE_RH", "ROLE_EMPLOYE")
+
                         .requestMatchers("/api/employes/**")
                         .hasAnyAuthority("ROLE_ADMIN", "ROLE_RH")
 

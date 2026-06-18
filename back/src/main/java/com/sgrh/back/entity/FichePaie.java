@@ -3,13 +3,11 @@ package com.sgrh.back.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
 @Entity
-@Table(
-        name = "fiches_paie",
-        uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"mois", "annee", "employe_id"})
-        }
-)
+@Table(name = "fiches_paie")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -21,26 +19,31 @@ public class FichePaie {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "numero_fiche")
+    private String numeroFiche;
+
     @Column(nullable = false)
     private Integer mois;
 
     @Column(nullable = false)
     private Integer annee;
 
+    @Column(name = "salaire_brut", nullable = false)
+    private BigDecimal salaireBrut;
+
     @Column(nullable = false)
-    private Double salaireBrut;
+    private BigDecimal primes;
 
-    private Double primes;
+    @Column(nullable = false)
+    private BigDecimal deductions;
 
-    private Double deductions;
+    @Column(name = "salaire_net")
+    private BigDecimal salaireNet;
+
+    @Column(name = "date_generation")
+    private LocalDate dateGeneration;
 
     @ManyToOne
     @JoinColumn(name = "employe_id", nullable = false)
     private Employe employe;
-
-    public Double getSalaireNet() {
-        double p = primes != null ? primes : 0.0;
-        double d = deductions != null ? deductions : 0.0;
-        return salaireBrut + p - d;
-    }
 }
