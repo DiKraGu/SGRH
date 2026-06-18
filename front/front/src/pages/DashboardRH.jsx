@@ -76,14 +76,26 @@ function DashboardRH() {
             </aside>
 
             <main className="dashboard-content">
-                <div className="dashboard-header">
-                    <div className="dashboard-title">
-                        <h1>Dashboard RH</h1>
-                        <p>Vue d’ensemble des activités RH à piloter.</p>
-                    </div>
+               <div className="dashboard-header">
+    <div className="dashboard-title">
+        <h1>Dashboard RH</h1>
+        <p>Vue d’ensemble des activités RH à piloter.</p>
+    </div>
 
-                    <div className="dashboard-user">{email}</div>
-                </div>
+    <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+        <div className="dashboard-user">{email}</div>
+
+        <button
+            className="file-button"
+            onClick={() => {
+                localStorage.clear();
+                navigate("/");
+            }}
+        >
+            Déconnexion
+        </button>
+    </div>
+</div>
 
                 <div className="stats-grid">
                     <div

@@ -35,6 +35,14 @@ public class FichePaieController {
         return fichePaieService.createFichePaie(dto);
     }
 
+    @PutMapping("/{id}")
+    public FichePaieDto updateFichePaie(
+            @PathVariable Long id,
+            @RequestBody FichePaieDto dto
+    ) {
+        return fichePaieService.updateFichePaie(id, dto);
+    }
+
     @DeleteMapping("/{id}")
     public void deleteFichePaie(@PathVariable Long id) {
         fichePaieService.deleteFichePaie(id);

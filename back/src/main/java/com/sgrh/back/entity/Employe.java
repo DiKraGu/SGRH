@@ -1,6 +1,5 @@
 package com.sgrh.back.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.sgrh.back.enums.StatutEmploye;
 import com.sgrh.back.enums.TypeContrat;
 import jakarta.persistence.*;
@@ -22,42 +21,38 @@ public class Employe {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
     private String nom;
 
-    @Column(nullable = false)
     private String prenom;
 
     private String email;
 
     private String telephone;
 
-    @Column(nullable = false)
-    private BigDecimal salaireBase;
-
-    @Column(nullable = false)
+    @Column(name = "date_embauche")
     private LocalDate dateEmbauche;
 
-    @Builder.Default
-    private Integer quotaAnnuelConges = 22;
+    @Column(name = "salaire_base")
+    private BigDecimal salaireBase;
+
+    @Column(name = "quota_annuel_conges")
+    private Integer quotaAnnuelConges;
+
+    @Column(name = "quota_initial_conges")
+    private Integer quotaInitialConges;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private StatutEmploye statut;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "type_contrat")
     private TypeContrat typeContrat;
 
     @ManyToOne
-    @JoinColumn(name = "departement_id", nullable = false)
+    @JoinColumn(name = "departement_id")
     private Departement departement;
 
     @ManyToOne
-    @JoinColumn(name = "poste_id", nullable = false)
+    @JoinColumn(name = "poste_id")
     private Poste poste;
-
-    @JsonIgnore
-    @OneToOne(mappedBy = "employe")
-    private Utilisateur utilisateur;
 }

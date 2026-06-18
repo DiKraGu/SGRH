@@ -80,6 +80,48 @@ public class FichePaieService {
         return FichePaieMapper.toDto(fichePaieRepository.save(saved));
     }
 
+    public FichePaieDto updateFichePaie(Long id, FichePaieDto dto) {
+        FichePaie fichePaie = fichePaieRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Fiche de paie introuvable"));
+
+        fichePaieRepository
+                .findByEmployeIdAndMoisAndAnnee(
+                        fichePaie.getEmploye().getId(),
+                        dto.getMois(),
+                        dto.getAnnee()
+                )
+                .ifPresent(existingFiche -> {
+                    if (!existingFiche.getId().equals(id)) {
+                        throw new RuntimeException("Une autre fiche existe déjà pour cet employé sur ce mois.");
+                    }
+                });
+
+        BigDecimal salaireBrut = dto.getSalaireBrut() != null
+                ? dto.getSalaireBrut()
+                : BigDecimal.ZERO;
+
+        BigDecimal primes = dto.getPrimes() != null
+                ? dto.getPrimes()
+                : BigDecimal.ZERO;
+
+        BigDecimal deductions = dto.getDeductions() != null
+                ? dto.getDeductions()
+                : BigDecimal.ZERO;
+
+        BigDecimal salaireNet = salaireBrut.add(primes).subtract(deductions);
+
+        fichePaie.setMois(dto.getMois());
+        fichePaie.setAnnee(dto.getAnnee());
+        fichePaie.setSalaireBrut(salaireBrut);
+        fichePaie.setPrimes(primes);
+        fichePaie.setDeductions(deductions);
+        fichePaie.setSalaireNet(salaireNet);
+
+        FichePaie updated = fichePaieRepository.save(fichePaie);
+
+        return FichePaieMapper.toDto(updated);
+    }
+
     public void deleteFichePaie(Long id) {
         FichePaie fichePaie = fichePaieRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Fiche de paie introuvable"));

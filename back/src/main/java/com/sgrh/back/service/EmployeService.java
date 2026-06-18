@@ -6,6 +6,7 @@ import com.sgrh.back.entity.Employe;
 import com.sgrh.back.entity.Poste;
 import com.sgrh.back.entity.Utilisateur;
 import com.sgrh.back.enums.StatutEmploye;
+import com.sgrh.back.enums.TypeContrat;
 import com.sgrh.back.mapper.EmployeMapper;
 import com.sgrh.back.repository.DepartementRepository;
 import com.sgrh.back.repository.EmployeRepository;
@@ -33,6 +34,10 @@ public class EmployeService {
                 .orElseThrow(() -> new RuntimeException("Poste introuvable"));
 
         Employe employe = EmployeMapper.toEntity(dto, departement, poste);
+
+        if (employe.getQuotaInitialConges() == null) {
+            employe.setQuotaInitialConges(employe.getQuotaAnnuelConges());
+        }
 
         return EmployeMapper.toDto(employeRepository.save(employe));
     }
@@ -79,8 +84,21 @@ public class EmployeService {
         employe.setSalaireBase(dto.getSalaireBase());
         employe.setDateEmbauche(dto.getDateEmbauche());
         employe.setQuotaAnnuelConges(dto.getQuotaAnnuelConges());
-        employe.setStatut(dto.getStatut());
-        employe.setTypeContrat(dto.getTypeContrat());
+
+        if (dto.getQuotaInitialConges() != null) {
+            employe.setQuotaInitialConges(dto.getQuotaInitialConges());
+        } else if (employe.getQuotaInitialConges() == null) {
+            employe.setQuotaInitialConges(dto.getQuotaAnnuelConges());
+        }
+
+        if (dto.getStatut() != null) {
+            employe.setStatut(StatutEmploye.valueOf(dto.getStatut()));
+        }
+
+        if (dto.getTypeContrat() != null) {
+            employe.setTypeContrat(TypeContrat.valueOf(dto.getTypeContrat()));
+        }
+
         employe.setDepartement(departement);
         employe.setPoste(poste);
 

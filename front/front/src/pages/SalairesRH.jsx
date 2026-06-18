@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
     getAllFichesPaie,
     createFichePaie,
+    updateFichePaie,
     deleteFichePaie,
 } from "../services/fichePaieService";
 import { getAllEmployes } from "../services/employeService";
@@ -24,6 +25,7 @@ function SalairesRH() {
     const [anneeFilter, setAnneeFilter] = useState("TOUS");
 
     const [selectedFiche, setSelectedFiche] = useState(null);
+    const [editFiche, setEditFiche] = useState(null);
     const [showAddModal, setShowAddModal] = useState(false);
 
     const [newFiche, setNewFiche] = useState({
@@ -57,6 +59,8 @@ function SalairesRH() {
         ]),
     ].sort((a, b) => b - a);
 
+   
+
     const fetchFichesPaie = async () => {
         try {
             const data = await getAllFichesPaie();
@@ -88,17 +92,9 @@ function SalairesRH() {
         const selectedMonth = Number(mois);
         const selectedYear = Number(annee);
 
-        if (!selectedMonth || !selectedYear) {
-            return false;
-        }
-
-        if (selectedYear > currentYear) {
-            return false;
-        }
-
-        if (selectedYear === currentYear && selectedMonth > currentMonth) {
-            return false;
-        }
+        if (!selectedMonth || !selectedYear) return false;
+        if (selectedYear > currentYear) return false;
+        if (selectedYear === currentYear && selectedMonth > currentMonth) return false;
 
         return true;
     };
@@ -107,14 +103,8 @@ function SalairesRH() {
         const selectedYear = Number(annee);
 
         return Object.entries(moisLabels).filter(([mois]) => {
-            if (selectedYear < currentYear) {
-                return true;
-            }
-
-            if (selectedYear === currentYear) {
-                return Number(mois) <= currentMonth;
-            }
-
+            if (selectedYear < currentYear) return true;
+            if (selectedYear === currentYear) return Number(mois) <= currentMonth;
             return false;
         });
     };
@@ -133,12 +123,8 @@ function SalairesRH() {
         `.toLowerCase();
 
         const matchSearch = fullText.includes(search);
-
-        const matchMois =
-            moisFilter === "TOUS" || Number(fiche.mois) === Number(moisFilter);
-
-        const matchAnnee =
-            anneeFilter === "TOUS" || Number(fiche.annee) === Number(anneeFilter);
+        const matchMois = moisFilter === "TOUS" || Number(fiche.mois) === Number(moisFilter);
+        const matchAnnee = anneeFilter === "TOUS" || Number(fiche.annee) === Number(anneeFilter);
 
         return matchSearch && matchMois && matchAnnee;
     });
@@ -180,6 +166,13 @@ function SalairesRH() {
         });
     };
 
+    const handleEditFicheChange = (field, value) => {
+        setEditFiche({
+            ...editFiche,
+            [field]: value,
+        });
+    };
+
     const resetNewFicheForm = () => {
         setNewFiche({
             employeId: "",
@@ -191,10 +184,10 @@ function SalairesRH() {
         });
     };
 
-    const calculateSalaireNet = () => {
-        const salaireBrut = Number(newFiche.salaireBrut || 0);
-        const primes = Number(newFiche.primes || 0);
-        const deductions = Number(newFiche.deductions || 0);
+    const calculateSalaireNet = (fiche) => {
+        const salaireBrut = Number(fiche.salaireBrut || 0);
+        const primes = Number(fiche.primes || 0);
+        const deductions = Number(fiche.deductions || 0);
 
         return salaireBrut + primes - deductions;
     };
@@ -222,7 +215,7 @@ function SalairesRH() {
             return;
         }
 
-        if (calculateSalaireNet() < 0) {
+        if (calculateSalaireNet(newFiche) < 0) {
             alert("Le salaire net ne peut pas être négatif.");
             return;
         }
@@ -244,6 +237,55 @@ function SalairesRH() {
             fetchFichesPaie();
         } catch (error) {
             console.error("Erreur création fiche de paie", error);
+            alert("Erreur : une fiche existe peut-être déjà pour cet employé sur ce mois.");
+        }
+    };
+
+    const handleUpdateFiche = async (e) => {
+        e.preventDefault();
+
+        if (!editFiche.mois || !editFiche.annee) {
+            alert("Veuillez remplir le mois et l'année.");
+            return;
+        }
+
+        if (!isPeriodeValide(editFiche.mois, editFiche.annee)) {
+            alert("Impossible de modifier une fiche vers un mois futur.");
+            return;
+        }
+
+        if (Number(editFiche.salaireBrut) <= 0) {
+            alert("Le salaire brut doit être supérieur à 0.");
+            return;
+        }
+
+        if (Number(editFiche.primes) < 0 || Number(editFiche.deductions) < 0) {
+            alert("Les primes et les déductions ne peuvent pas être négatives.");
+            return;
+        }
+
+        if (calculateSalaireNet(editFiche) < 0) {
+            alert("Le salaire net ne peut pas être négatif.");
+            return;
+        }
+
+        try {
+            const ficheToUpdate = {
+                ...editFiche,
+                mois: Number(editFiche.mois),
+                annee: Number(editFiche.annee),
+                salaireBrut: Number(editFiche.salaireBrut),
+                primes: Number(editFiche.primes || 0),
+                deductions: Number(editFiche.deductions || 0),
+            };
+
+            await updateFichePaie(editFiche.id, ficheToUpdate);
+
+            setEditFiche(null);
+            setSelectedFiche(null);
+            fetchFichesPaie();
+        } catch (error) {
+            console.error("Erreur modification fiche de paie", error);
             alert("Erreur : une fiche existe peut-être déjà pour cet employé sur ce mois.");
         }
     };
@@ -271,24 +313,15 @@ function SalairesRH() {
                 <div className="sidebar-logo">SGRH</div>
 
                 <div className="sidebar-menu">
-                    <div
-                        className="sidebar-item"
-                        onClick={() => navigate("/rh")}
-                    >
+                    <div className="sidebar-item" onClick={() => navigate("/rh")}>
                         Tableau de bord
                     </div>
 
-                    <div
-                        className="sidebar-item"
-                        onClick={() => navigate("/rh/employes")}
-                    >
+                    <div className="sidebar-item" onClick={() => navigate("/rh/employes")}>
                         Employés
                     </div>
 
-                    <div
-                        className="sidebar-item"
-                        onClick={() => navigate("/rh/conges")}
-                    >
+                    <div className="sidebar-item" onClick={() => navigate("/rh/conges")}>
                         Congés
                     </div>
 
@@ -296,17 +329,11 @@ function SalairesRH() {
                         Salaires
                     </div>
 
-                    <div
-                        className="sidebar-item"
-                        onClick={() => navigate("/rh/offres")}
-                    >
+                    <div className="sidebar-item" onClick={() => navigate("/rh/offres")}>
                         Offres d'emploi
                     </div>
 
-                    <div
-                        className="sidebar-item"
-                        onClick={() => navigate("/rh/candidatures")}
-                    >
+                    <div className="sidebar-item" onClick={() => navigate("/rh/candidatures")}>
                         Candidatures
                     </div>
                 </div>
@@ -399,9 +426,7 @@ function SalairesRH() {
                                         onClick={() => setSelectedFiche(fiche)}
                                     >
                                         <td>{fiche.numeroFiche}</td>
-                                        <td>
-                                            {fiche.employePrenom} {fiche.employeNom}
-                                        </td>
+                                        <td>{fiche.employePrenom} {fiche.employeNom}</td>
                                         <td>{fiche.departementNom}</td>
                                         <td>{fiche.posteLibelle}</td>
                                         <td>{moisLabels[fiche.mois]}</td>
@@ -440,10 +465,7 @@ function SalairesRH() {
                         </div>
 
                         <div className="details-grid">
-                            <p>
-                                <strong>Employé :</strong>{" "}
-                                {selectedFiche.employePrenom} {selectedFiche.employeNom}
-                            </p>
+                            <p><strong>Employé :</strong> {selectedFiche.employePrenom} {selectedFiche.employeNom}</p>
                             <p><strong>Email :</strong> {selectedFiche.employeEmail || "-"}</p>
                             <p><strong>Téléphone :</strong> {selectedFiche.employeTelephone || "-"}</p>
                             <p><strong>Département :</strong> {selectedFiche.departementNom}</p>
@@ -460,12 +482,124 @@ function SalairesRH() {
 
                         <div className="modal-actions">
                             <button
+                                className="action-button"
+                                onClick={() => {
+                                    setEditFiche(selectedFiche);
+                                    setSelectedFiche(null);
+                                }}
+                            >
+                                Modifier
+                            </button>
+
+                            <button
                                 className="action-button danger-button"
                                 onClick={() => handleDeleteFiche(selectedFiche)}
                             >
-                                Supprimer la fiche
+                                Supprimer
                             </button>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {editFiche && (
+                <div className="modal-overlay">
+                    <div className="modal-card large">
+                        <div className="modal-header">
+                            <div>
+                                <h2>Modifier fiche de paie</h2>
+                                <p>{editFiche.numeroFiche}</p>
+                            </div>
+
+                            <button
+                                className="modal-close"
+                                onClick={() => setEditFiche(null)}
+                            >
+                                ×
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleUpdateFiche} className="form-grid">
+                            <div className="form-field">
+                                <label>Mois</label>
+                                <select
+                                    value={editFiche.mois}
+                                    onChange={(e) => handleEditFicheChange("mois", e.target.value)}
+                                    required
+                                >
+                                    {getMoisDisponiblesPourAnnee(editFiche.annee).map(([value, label]) => (
+                                        <option key={value} value={value}>
+                                            {label}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="form-field">
+                                <label>Année</label>
+                                <input
+                                    type="number"
+                                    min="2020"
+                                    max={currentYear}
+                                    value={editFiche.annee}
+                                    onChange={(e) => handleEditFicheChange("annee", e.target.value)}
+                                    required
+                                />
+                            </div>
+
+                            <div className="form-field">
+                                <label>Salaire brut</label>
+                                <input
+                                    type="number"
+                                    value={editFiche.salaireBrut}
+                                    onChange={(e) => handleEditFicheChange("salaireBrut", e.target.value)}
+                                    required
+                                />
+                            </div>
+
+                            <div className="form-field">
+                                <label>Primes</label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    value={editFiche.primes}
+                                    onChange={(e) => handleEditFicheChange("primes", e.target.value)}
+                                />
+                            </div>
+
+                            <div className="form-field">
+                                <label>Déductions</label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    value={editFiche.deductions}
+                                    onChange={(e) => handleEditFicheChange("deductions", e.target.value)}
+                                />
+                            </div>
+
+                            <div className="form-field">
+                                <label>Salaire net calculé</label>
+                                <input
+                                    type="number"
+                                    value={calculateSalaireNet(editFiche)}
+                                    readOnly
+                                />
+                            </div>
+
+                            <div className="modal-actions full-width">
+                                <button type="submit" className="action-button">
+                                    Enregistrer
+                                </button>
+
+                                <button
+                                    type="button"
+                                    className="action-button secondary"
+                                    onClick={() => setEditFiche(null)}
+                                >
+                                    Annuler
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}
@@ -495,9 +629,7 @@ function SalairesRH() {
                                 <label>Employé</label>
                                 <select
                                     value={newFiche.employeId}
-                                    onChange={(e) =>
-                                        handleNewFicheChange("employeId", e.target.value)
-                                    }
+                                    onChange={(e) => handleNewFicheChange("employeId", e.target.value)}
                                     required
                                 >
                                     <option value="">Sélectionner un employé actif</option>
@@ -517,9 +649,7 @@ function SalairesRH() {
                                     min="2020"
                                     max={currentYear}
                                     value={newFiche.annee}
-                                    onChange={(e) =>
-                                        handleNewFicheChange("annee", e.target.value)
-                                    }
+                                    onChange={(e) => handleNewFicheChange("annee", e.target.value)}
                                     required
                                 />
                             </div>
@@ -528,20 +658,16 @@ function SalairesRH() {
                                 <label>Mois</label>
                                 <select
                                     value={newFiche.mois}
-                                    onChange={(e) =>
-                                        handleNewFicheChange("mois", e.target.value)
-                                    }
+                                    onChange={(e) => handleNewFicheChange("mois", e.target.value)}
                                     required
                                 >
                                     <option value="">Sélectionner un mois</option>
 
-                                    {getMoisDisponiblesPourAnnee(newFiche.annee).map(
-                                        ([value, label]) => (
-                                            <option key={value} value={value}>
-                                                {label}
-                                            </option>
-                                        )
-                                    )}
+                                    {getMoisDisponiblesPourAnnee(newFiche.annee).map(([value, label]) => (
+                                        <option key={value} value={value}>
+                                            {label}
+                                        </option>
+                                    ))}
                                 </select>
                             </div>
 
@@ -550,9 +676,7 @@ function SalairesRH() {
                                 <input
                                     type="number"
                                     value={newFiche.salaireBrut}
-                                    onChange={(e) =>
-                                        handleNewFicheChange("salaireBrut", e.target.value)
-                                    }
+                                    onChange={(e) => handleNewFicheChange("salaireBrut", e.target.value)}
                                     required
                                 />
                             </div>
@@ -563,9 +687,7 @@ function SalairesRH() {
                                     type="number"
                                     min="0"
                                     value={newFiche.primes}
-                                    onChange={(e) =>
-                                        handleNewFicheChange("primes", e.target.value)
-                                    }
+                                    onChange={(e) => handleNewFicheChange("primes", e.target.value)}
                                 />
                             </div>
 
@@ -575,9 +697,7 @@ function SalairesRH() {
                                     type="number"
                                     min="0"
                                     value={newFiche.deductions}
-                                    onChange={(e) =>
-                                        handleNewFicheChange("deductions", e.target.value)
-                                    }
+                                    onChange={(e) => handleNewFicheChange("deductions", e.target.value)}
                                 />
                             </div>
 
@@ -585,7 +705,7 @@ function SalairesRH() {
                                 <label>Salaire net calculé</label>
                                 <input
                                     type="number"
-                                    value={calculateSalaireNet()}
+                                    value={calculateSalaireNet(newFiche)}
                                     readOnly
                                 />
                             </div>

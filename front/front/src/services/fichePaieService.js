@@ -20,6 +20,11 @@ export const createFichePaie = async (fichePaie) => {
     return response.data;
 };
 
+export const updateFichePaie = async (id, fichePaie) => {
+    const response = await api.put(`/fiches-paie/${id}`, fichePaie);
+    return response.data;
+};
+
 export const deleteFichePaie = async (id) => {
     const response = await api.delete(`/fiches-paie/${id}`);
     return response.data;
