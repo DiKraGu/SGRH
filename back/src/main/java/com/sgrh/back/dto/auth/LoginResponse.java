@@ -1,18 +1,15 @@
 package com.sgrh.back.dto.auth;
 
-import com.sgrh.back.enums.Role;
-import lombok.*;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
 @Builder
 public class LoginResponse {
 
     private String token;
-
     private String email;
-
-    private Role role;
+    private String role;
 }

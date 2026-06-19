@@ -11,20 +11,18 @@ import "../styles/dashboard.css";
 
 function DashboardEmploye() {
     const email = localStorage.getItem("email");
-    const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("role");
-    localStorage.removeItem("email");
-
-    window.location.href = "/";
-};
 
     const [activeTab, setActiveTab] = useState("ESPACE");
     const [employe, setEmploye] = useState(null);
     const [conges, setConges] = useState([]);
     const [fichesPaie, setFichesPaie] = useState([]);
+
     const [showCongeModal, setShowCongeModal] = useState(false);
     const [selectedFiche, setSelectedFiche] = useState(null);
+
+    const [statutFilter, setStatutFilter] = useState("TOUS");
+    const [paieMoisFilter, setPaieMoisFilter] = useState("TOUS");
+    const [paieAnneeFilter, setPaieAnneeFilter] = useState("TOUS");
 
     const [newConge, setNewConge] = useState({
         dateDebut: "",
@@ -50,6 +48,13 @@ function DashboardEmploye() {
     };
 
     const today = new Date().toISOString().split("T")[0];
+
+    const handleLogout = () => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("role");
+        localStorage.removeItem("email");
+        window.location.href = "/";
+    };
 
     const fetchEmployeData = async () => {
         try {
@@ -225,6 +230,27 @@ function DashboardEmploye() {
         return `${years} an(s) ${months} mois`;
     };
 
+    const filteredConges = conges.filter((conge) => {
+        if (statutFilter === "TOUS") return true;
+        return conge.statut === statutFilter;
+    });
+
+    const anneesPaieDisponibles = [
+        ...new Set(fichesPaie.map((fiche) => fiche.annee)),
+    ].sort((a, b) => b - a);
+
+    const filteredFichesPaie = fichesPaie.filter((fiche) => {
+        const matchMois =
+            paieMoisFilter === "TOUS" ||
+            Number(fiche.mois) === Number(paieMoisFilter);
+
+        const matchAnnee =
+            paieAnneeFilter === "TOUS" ||
+            Number(fiche.annee) === Number(paieAnneeFilter);
+
+        return matchMois && matchAnnee;
+    });
+
     const handleDownloadPdf = (fiche) => {
         const doc = new jsPDF();
 
@@ -324,9 +350,17 @@ Description du problème :
                         </p>
                     </div>
 
-                    <div className="dashboard-user">
-                        {email}
-                    </div>
+                    {activeTab === "ESPACE" ? (
+                        <div className="dashboard-user-actions">
+                            <div className="dashboard-user">{email}</div>
+
+                            <button className="logout-button" onClick={handleLogout}>
+                                Déconnexion
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="dashboard-user">{email}</div>
+                    )}
                 </div>
 
                 {employe && (
@@ -349,7 +383,7 @@ Description du problème :
                                     </div>
 
                                     <div className="stat-card">
-                                        <h3>Congés validés</h3>
+                                        <h3>Jours de congés validés</h3>
                                         <div className="stat-number">
                                             {getCongesValides()}
                                         </div>
@@ -419,14 +453,42 @@ Description du problème :
                                         </p>
                                     </div>
 
-                                    <button
-                                        className="action-button"
-                                        type="button"
-                                        onClick={() => setShowCongeModal(true)}
-                                        style={{ maxWidth: "220px" }}
-                                    >
-                                        Nouvelle demande
-                                    </button>
+                                    <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+                                        <select
+                                            className="filter-select"
+                                            value={statutFilter}
+                                            onChange={(e) => setStatutFilter(e.target.value)}
+                                            style={{ minWidth: "180px" }}
+                                        >
+                                            <option value="TOUS">Tous les statuts</option>
+                                            <option value="EN_ATTENTE">En attente</option>
+                                            <option value="VALIDE">Validés</option>
+                                            <option value="REFUSE">Refusés</option>
+                                        </select>
+
+                                        <button
+                                            className="action-button"
+                                            type="button"
+                                            onClick={() => setShowCongeModal(true)}
+                                            style={{ width: "220px", marginBottom: 0 }}
+                                        >
+                                            Nouvelle demande
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div
+                                    style={{
+                                        marginBottom: "20px",
+                                        padding: "16px",
+                                        background: "#f8fafc",
+                                        border: "1px solid #e2e8f0",
+                                        borderRadius: "12px",
+                                        fontWeight: "600",
+                                        color: "#1e293b",
+                                    }}
+                                >
+                                    Quota restant : {employe.quotaAnnuelConges} jour(s)
                                 </div>
 
                                 <div className="table-container">
@@ -444,7 +506,7 @@ Description du problème :
                                         </thead>
 
                                         <tbody>
-                                            {conges.map((conge) => (
+                                            {filteredConges.map((conge) => (
                                                 <tr key={conge.id}>
                                                     <td>{getTypeLabel(conge.typeConge)}</td>
                                                     <td>{conge.dateDebut}</td>
@@ -473,7 +535,7 @@ Description du problème :
                                         </tbody>
                                     </table>
 
-                                    {conges.length === 0 && (
+                                    {filteredConges.length === 0 && (
                                         <div className="empty-state">
                                             Aucune demande de congé trouvée.
                                         </div>
@@ -493,6 +555,36 @@ Description du problème :
                                     </div>
                                 </div>
 
+                                <div className="filters-row employee-filters">
+                                    <select
+                                        className="filter-select"
+                                        value={paieMoisFilter}
+                                        onChange={(e) => setPaieMoisFilter(e.target.value)}
+                                    >
+                                        <option value="TOUS">Tous les mois</option>
+
+                                        {Object.entries(moisLabels).map(([value, label]) => (
+                                            <option key={value} value={value}>
+                                                {label}
+                                            </option>
+                                        ))}
+                                    </select>
+
+                                    <select
+                                        className="filter-select"
+                                        value={paieAnneeFilter}
+                                        onChange={(e) => setPaieAnneeFilter(e.target.value)}
+                                    >
+                                        <option value="TOUS">Toutes les années</option>
+
+                                        {anneesPaieDisponibles.map((annee) => (
+                                            <option key={annee} value={annee}>
+                                                {annee}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
                                 <div className="table-container">
                                     <table className="data-table clickable-table">
                                         <thead>
@@ -509,7 +601,7 @@ Description du problème :
                                         </thead>
 
                                         <tbody>
-                                            {fichesPaie.map((fiche) => (
+                                            {filteredFichesPaie.map((fiche) => (
                                                 <tr
                                                     key={fiche.id}
                                                     onClick={() => setSelectedFiche(fiche)}
@@ -527,9 +619,9 @@ Description du problème :
                                         </tbody>
                                     </table>
 
-                                    {fichesPaie.length === 0 && (
+                                    {filteredFichesPaie.length === 0 && (
                                         <div className="empty-state">
-                                            Aucune fiche de paie disponible.
+                                            Aucune fiche de paie trouvée.
                                         </div>
                                     )}
                                 </div>

@@ -29,8 +29,16 @@ function Login() {
                 navigate("/employe");
             }
         } catch (err) {
-            setError("Email ou mot de passe incorrect.");
-        }
+
+    console.log(err.response);
+
+    if (err.response?.data?.message) {
+        setError(err.response.data.message);
+    } else {
+        setError("Email ou mot de passe incorrect.");
+    }
+
+}
     };
 
     return (

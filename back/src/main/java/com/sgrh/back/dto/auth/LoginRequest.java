@@ -1,12 +1,10 @@
 package com.sgrh.back.dto.auth;
 
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class LoginRequest {
 
     private String email;
