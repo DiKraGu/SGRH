@@ -91,11 +91,29 @@ public class SecurityConfig {
                         .requestMatchers("/api/employes/**")
                         .hasAnyAuthority("ROLE_ADMIN", "ROLE_RH")
 
-                        .requestMatchers("/api/departements/**")
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/departements/**")
                         .hasAnyAuthority("ROLE_ADMIN", "ROLE_RH")
 
-                        .requestMatchers("/api/postes/**")
+                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/departements/**")
+                        .hasAuthority("ROLE_ADMIN")
+
+                        .requestMatchers(org.springframework.http.HttpMethod.PUT, "/api/departements/**")
+                        .hasAuthority("ROLE_ADMIN")
+
+                        .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/departements/**")
+                        .hasAuthority("ROLE_ADMIN")
+
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/postes/**")
                         .hasAnyAuthority("ROLE_ADMIN", "ROLE_RH")
+
+                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/postes/**")
+                        .hasAuthority("ROLE_ADMIN")
+
+                        .requestMatchers(org.springframework.http.HttpMethod.PUT, "/api/postes/**")
+                        .hasAuthority("ROLE_ADMIN")
+
+                        .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/postes/**")
+                        .hasAuthority("ROLE_ADMIN")
 
                         .requestMatchers("/api/conges/**")
                         .hasAnyAuthority("ROLE_ADMIN", "ROLE_RH", "ROLE_EMPLOYE")
@@ -116,7 +134,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/admin/historique/**")
                         .hasAuthority("ROLE_ADMIN")
 
-                        .requestMatchers("/cv/**").permitAll()
+
 
                         .anyRequest().authenticated()
                 )

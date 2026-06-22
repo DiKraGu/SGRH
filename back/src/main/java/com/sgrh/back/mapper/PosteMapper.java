@@ -9,7 +9,6 @@ public class PosteMapper {
     }
 
     public static PosteDto toDto(Poste poste) {
-
         if (poste == null) {
             return null;
         }
@@ -18,19 +17,16 @@ public class PosteMapper {
                 .id(poste.getId())
                 .libelle(poste.getLibelle())
                 .description(poste.getDescription())
-
                 .departementId(
                         poste.getDepartement() != null
                                 ? poste.getDepartement().getId()
                                 : null
                 )
-
                 .departementNom(
                         poste.getDepartement() != null
                                 ? poste.getDepartement().getNom()
                                 : null
                 )
-
                 .build();
     }
 }

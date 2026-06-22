@@ -45,15 +45,18 @@ function CandidaturesRH() {
         }
     };
 
-    const handleOpenCV = (cvPath) => {
-        if (!cvPath) {
-            alert("CV non disponible.");
-            return;
-        }
+   const handleVoirCV = (cheminCV) => {
+    if (!cheminCV) {
+        alert("Aucun CV disponible.");
+        return;
+    }
 
-        const url = `http://localhost:8080/${cvPath}`;
-        window.open(url, "_blank");
-    };
+    const cleanPath = cheminCV.startsWith("cv/")
+        ? cheminCV.replace("cv/", "")
+        : cheminCV;
+
+    window.open(`http://localhost:8080/cv/${cleanPath}`, "_blank");
+};
 
     const getStatutLabel = (statut) => {
         switch (statut) {
@@ -178,13 +181,12 @@ function CandidaturesRH() {
 
                                         <td>
                                             <button
-                                                className="file-button"
-                                                onClick={() =>
-                                                    handleOpenCV(candidature.cheminCV)
-                                                }
-                                            >
-                                                Voir CV
-                                            </button>
+    type="button"
+    className="cv-button"
+    onClick={() => handleVoirCV(candidature.cheminCV)}
+>
+    Voir CV
+</button>
                                         </td>
 
                                         <td>

@@ -14,6 +14,7 @@ import SalairesRH from "../pages/SalairesRH";
 import UtilisateursAdmin from "../pages/UtilisateursAdmin";
 import HistoriqueAdmin from "../pages/HistoriqueAdmin";
 import EspaceCandidat from "../pages/EspaceCandidat";
+import ReferentielsAdmin from "../pages/ReferentielsAdmin";
 
 import ProtectedRoute from "./ProtectedRoute";
 
@@ -108,6 +109,15 @@ function AppRoutes() {
     element={
         <ProtectedRoute allowedRoles={["ADMIN"]}>
             <HistoriqueAdmin />
+        </ProtectedRoute>
+    }
+/>
+
+<Route
+    path="/admin/referentiels"
+    element={
+        <ProtectedRoute allowedRoles={["ADMIN"]}>
+            <ReferentielsAdmin />
         </ProtectedRoute>
     }
 />

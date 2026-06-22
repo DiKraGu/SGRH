@@ -4,3 +4,17 @@ export const getAllDepartements = async () => {
     const response = await api.get("/departements");
     return response.data;
 };
+
+export const createDepartement = async (data) => {
+    const response = await api.post("/departements", data);
+    return response.data;
+};
+
+export const updateDepartement = async (id, data) => {
+    const response = await api.put(`/departements/${id}`, data);
+    return response.data;
+};
+
+export const deleteDepartement = async (id) => {
+    await api.delete(`/departements/${id}`);
+};

@@ -71,6 +71,13 @@ function HistoriqueAdmin() {
                         Utilisateurs
                     </div>
 
+                    <div
+    className="sidebar-item"
+    onClick={() => navigate("/admin/referentiels")}
+>
+    Référentiels RH
+</div>
+
                     <div className="sidebar-item active">
                         Historique système
                     </div>

@@ -1,6 +1,8 @@
 package com.sgrh.back.service;
 
+import com.sgrh.back.dto.departement.DepartementDto;
 import com.sgrh.back.entity.Departement;
+import com.sgrh.back.mapper.DepartementMapper;
 import com.sgrh.back.repository.DepartementRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -12,35 +14,71 @@ import java.util.List;
 public class DepartementService {
 
     private final DepartementRepository departementRepository;
+    private final HistoriqueActionService historiqueActionService;
 
-    public List<Departement> getAllDepartements() {
-        return departementRepository.findAll();
+    public List<DepartementDto> getAllDepartements() {
+        return departementRepository.findAll()
+                .stream()
+                .map(DepartementMapper::toDto)
+                .toList();
     }
 
-    public Departement getDepartementById(Long id) {
+    public DepartementDto getDepartementById(Long id) {
+        Departement departement = departementRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Département introuvable"));
+
+        return DepartementMapper.toDto(departement);
+    }
+
+    public Departement getDepartementEntityById(Long id) {
         return departementRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Département introuvable"));
     }
 
-    public Departement createDepartement(Departement departement) {
-        if (departementRepository.existsByNom(departement.getNom())) {
-            throw new RuntimeException("Un département avec ce nom existe déjà");
-        }
-        return departementRepository.save(departement);
+    public DepartementDto createDepartement(DepartementDto dto) {
+        Departement departement = DepartementMapper.toEntity(dto);
+
+        Departement saved = departementRepository.save(departement);
+
+        historiqueActionService.enregistrerAction(
+                "ADMIN",
+                "Création département",
+                "Création du département " + saved.getNom()
+        );
+
+        return DepartementMapper.toDto(saved);
     }
 
-    public Departement updateDepartement(Long id, Departement details) {
-        Departement departement = getDepartementById(id);
+    public DepartementDto updateDepartement(Long id, DepartementDto dto) {
+        Departement departement = departementRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Département introuvable"));
 
-        departement.setNom(details.getNom());
-        departement.setDescription(details.getDescription());
-        departement.setIdResponsable(details.getIdResponsable());
+        String ancienNom = departement.getNom();
 
-        return departementRepository.save(departement);
+        departement.setNom(dto.getNom());
+        departement.setDescription(dto.getDescription());
+
+        Departement saved = departementRepository.save(departement);
+
+        historiqueActionService.enregistrerAction(
+                "ADMIN",
+                "Modification département",
+                "Modification du département " + ancienNom + " -> " + saved.getNom()
+        );
+
+        return DepartementMapper.toDto(saved);
     }
 
     public void deleteDepartement(Long id) {
-        Departement departement = getDepartementById(id);
+        Departement departement = departementRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Département introuvable"));
+
+        historiqueActionService.enregistrerAction(
+                "ADMIN",
+                "Suppression département",
+                "Suppression du département " + departement.getNom()
+        );
+
         departementRepository.delete(departement);
     }
 }

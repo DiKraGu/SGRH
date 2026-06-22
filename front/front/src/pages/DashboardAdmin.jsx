@@ -141,6 +141,13 @@ function DashboardAdmin() {
 
                     <div
     className="sidebar-item"
+    onClick={() => navigate("/admin/referentiels")}
+>
+    Référentiels RH
+</div>
+
+                    <div
+    className="sidebar-item"
     onClick={() => navigate("/admin/historique")}
 >
     Historique système
