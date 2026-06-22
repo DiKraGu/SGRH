@@ -103,6 +103,15 @@ public class SecurityConfig {
                         .requestMatchers("/api/dashboard/rh/**")
                         .hasAnyAuthority("ROLE_ADMIN", "ROLE_RH")
 
+                        .requestMatchers("/api/admin/dashboard/**")
+                        .hasAuthority("ROLE_ADMIN")
+
+                        .requestMatchers("/api/admin/utilisateurs/**")
+                        .hasAuthority("ROLE_ADMIN")
+
+                        .requestMatchers("/api/profil/**")
+                        .hasAnyAuthority("ROLE_ADMIN", "ROLE_RH", "ROLE_EMPLOYE")
+
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(

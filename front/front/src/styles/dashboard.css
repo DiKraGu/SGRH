@@ -578,6 +578,74 @@ body {
 .logout-button:hover {
     background: #bfdbfe;
 }
+.admin-dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+.chart-card {
+    min-height: 380px;
+}
+
+.chart-wrapper {
+    max-width: 320px;
+    margin: 28px auto 0;
+}
+
+.bar-chart-wrapper {
+    height: 360px;
+    margin-top: 24px;
+}
+
+@media (max-width: 900px) {
+    .admin-dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .bar-chart-wrapper {
+        height: 280px;
+    }
+}
+
+.table-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.table-select {
+    padding: 9px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    font-weight: 600;
+    background: white;
+    color: #0f172a;
+}
+
+.danger-button {
+    border: none;
+    cursor: pointer;
+    padding: 9px 14px;
+    border-radius: 10px;
+    background: #fee2e2;
+    color: #dc2626;
+    font-weight: 700;
+}
+
+.danger-button:hover {
+    background: #fecaca;
+}
+
+.clickable-user {
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.clickable-user:hover {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
 
 @media (max-width: 900px) {
     .dashboard-layout {

@@ -11,6 +11,8 @@ import EmployesRH from "../pages/EmployesRH";
 import CongesRH from "../pages/CongesRH";
 import OffresEmploiRH from "../pages/OffresEmploiRH";
 import SalairesRH from "../pages/SalairesRH";
+import UtilisateursAdmin from "../pages/UtilisateursAdmin";
+
 
 import ProtectedRoute from "./ProtectedRoute";
 
@@ -87,6 +89,15 @@ function AppRoutes() {
     element={
         <ProtectedRoute allowedRoles={["RH"]}>
             <SalairesRH />
+        </ProtectedRoute>
+    }
+/>
+
+<Route
+    path="/admin/utilisateurs"
+    element={
+        <ProtectedRoute allowedRoles={["ADMIN"]}>
+            <UtilisateursAdmin />
         </ProtectedRoute>
     }
 />

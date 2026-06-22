@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getRhDashboardStats } from "../services/dashboardService";
+import ProfilModal from "../components/ProfilModal";
 import "../styles/dashboard.css";
 
 function DashboardRH() {
     const navigate = useNavigate();
     const email = localStorage.getItem("email");
+
+    const [showProfilModal, setShowProfilModal] = useState(false);
 
     const [stats, setStats] = useState({
         employesActifs: 0,
@@ -27,6 +30,13 @@ function DashboardRH() {
 
         fetchStats();
     }, []);
+
+    const handleLogout = () => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("role");
+        localStorage.removeItem("email");
+        navigate("/");
+    };
 
     return (
         <div className="dashboard-layout">
@@ -76,26 +86,25 @@ function DashboardRH() {
             </aside>
 
             <main className="dashboard-content">
-               <div className="dashboard-header">
-    <div className="dashboard-title">
-        <h1>Dashboard RH</h1>
-        <p>Vue d’ensemble des activités RH à piloter.</p>
-    </div>
+                <div className="dashboard-header">
+                    <div className="dashboard-title">
+                        <h1>Dashboard RH</h1>
+                        <p>Vue d’ensemble des activités RH à piloter.</p>
+                    </div>
 
-    <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-        <div className="dashboard-user">{email}</div>
+                    <div className="dashboard-user-actions">
+                        <div
+                            className="dashboard-user clickable-user"
+                            onClick={() => setShowProfilModal(true)}
+                        >
+                            {email}
+                        </div>
 
-        <button
-            className="file-button"
-            onClick={() => {
-                localStorage.clear();
-                navigate("/");
-            }}
-        >
-            Déconnexion
-        </button>
-    </div>
-</div>
+                        <button className="logout-button" onClick={handleLogout}>
+                            Déconnexion
+                        </button>
+                    </div>
+                </div>
 
                 <div className="stats-grid">
                     <div
@@ -137,66 +146,49 @@ function DashboardRH() {
 
                 <div className="dashboard-grid">
                     <div className="section-card">
-    <h2>Aperçu RH</h2>
+                        <h2>Aperçu RH</h2>
 
-    <div className="overview-grid">
+                        <div className="overview-grid">
+                            <div className="overview-item">
+                                <span className="overview-label">Départements</span>
+                                <span className="overview-value">6</span>
+                            </div>
 
-        <div className="overview-item">
-            <span className="overview-label">Départements</span>
-            <span className="overview-value">6</span>
-        </div>
+                            <div className="overview-item">
+                                <span className="overview-label">Postes</span>
+                                <span className="overview-value">7</span>
+                            </div>
 
-        <div className="overview-item">
-            <span className="overview-label">Postes</span>
-            <span className="overview-value">7</span>
-        </div>
+                            <div className="overview-item">
+                                <span className="overview-label">Employés actifs</span>
+                                <span className="overview-value">{stats.employesActifs}</span>
+                            </div>
 
-        <div className="overview-item">
-            <span className="overview-label">Employés actifs</span>
-            <span className="overview-value">
-                {stats.employesActifs}
-            </span>
-        </div>
+                            <div className="overview-item">
+                                <span className="overview-label">Offres ouvertes</span>
+                                <span className="overview-value">{stats.offresOuvertes}</span>
+                            </div>
 
-        <div className="overview-item">
-            <span className="overview-label">Offres ouvertes</span>
-            <span className="overview-value">
-                {stats.offresOuvertes}
-            </span>
-        </div>
+                            <div className="overview-item">
+                                <span className="overview-label">Candidatures reçues</span>
+                                <span className="overview-value">{stats.candidaturesRecues}</span>
+                            </div>
 
-        <div className="overview-item">
-            <span className="overview-label">Candidatures reçues</span>
-            <span className="overview-value">
-                {stats.candidaturesRecues}
-            </span>
-        </div>
-
-        <div className="overview-item">
-            <span className="overview-label">Congés en attente</span>
-            <span className="overview-value">
-                {stats.demandesConges}
-            </span>
-        </div>
-
-    </div>
-</div>
+                            <div className="overview-item">
+                                <span className="overview-label">Congés en attente</span>
+                                <span className="overview-value">{stats.demandesConges}</span>
+                            </div>
+                        </div>
+                    </div>
 
                     <div className="section-card">
                         <h2>Actions rapides</h2>
 
                         <button
                             className="action-button"
-                            onClick={() => navigate("/rh/candidatures")}
+                            onClick={() => navigate("/rh/employes")}
                         >
-                            Examiner les candidatures
-                        </button>
-
-                        <button
-                            className="action-button secondary"
-                            onClick={() => navigate("/rh/offres")}
-                        >
-                            Gérer les offres d'emploi
+                            Gérer les employés
                         </button>
 
                         <button
@@ -210,18 +202,22 @@ function DashboardRH() {
                             className="action-button secondary"
                             onClick={() => navigate("/rh/salaires")}
                         >
-                            Générer les fiches de paie
+                            Gérer les salaires
                         </button>
 
                         <button
                             className="action-button secondary"
-                            onClick={() => navigate("/rh/employes")}
+                            onClick={() => navigate("/rh/candidatures")}
                         >
-                            Gérer les employés
+                            Voir les candidatures
                         </button>
                     </div>
                 </div>
             </main>
+
+            {showProfilModal && (
+                <ProfilModal onClose={() => setShowProfilModal(false)} />
+            )}
         </div>
     );
 }
