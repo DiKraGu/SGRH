@@ -9,6 +9,7 @@ import java.util.List;
 public interface CandidatureRepository extends JpaRepository<Candidature, Long> {
 
     List<Candidature> findByOffreId(Long offreId);
+    List<Candidature> findByEmailOrderByDateSoumissionDesc(String email);
 
     boolean existsByEmailAndOffreId(String email, Long offreId);
 

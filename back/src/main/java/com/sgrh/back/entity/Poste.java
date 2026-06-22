@@ -16,8 +16,11 @@ public class Poste {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
     private String libelle;
 
     private String description;
+
+    @ManyToOne
+    @JoinColumn(name = "departement_id")
+    private Departement departement;
 }

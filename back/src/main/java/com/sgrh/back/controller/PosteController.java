@@ -1,5 +1,6 @@
 package com.sgrh.back.controller;
 
+import com.sgrh.back.dto.poste.PosteDto;
 import com.sgrh.back.entity.Poste;
 import com.sgrh.back.service.PosteService;
 import lombok.RequiredArgsConstructor;
@@ -15,14 +16,9 @@ public class PosteController {
 
     private final PosteService posteService;
 
-    @GetMapping
-    public List<Poste> getAllPostes() {
-        return posteService.getAllPostes();
-    }
-
     @GetMapping("/{id}")
     public Poste getPosteById(@PathVariable Long id) {
-        return posteService.getPosteById(id);
+        return posteService.getPosteEntityById(id);
     }
 
     @PostMapping
@@ -38,5 +34,10 @@ public class PosteController {
     @DeleteMapping("/{id}")
     public void deletePoste(@PathVariable Long id) {
         posteService.deletePoste(id);
+    }
+
+    @GetMapping
+    public List<PosteDto> getAllPostes() {
+        return posteService.getAllPostes();
     }
 }

@@ -6,12 +6,14 @@ import com.sgrh.back.dto.utilisateur.UtilisateurDto;
 import com.sgrh.back.entity.Employe;
 import com.sgrh.back.entity.Utilisateur;
 import com.sgrh.back.enums.Role;
+import com.sgrh.back.enums.StatutEmploye;
 import com.sgrh.back.mapper.UtilisateurMapper;
 import com.sgrh.back.repository.EmployeRepository;
 import com.sgrh.back.repository.UtilisateurRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
 
 import java.util.List;
 
@@ -41,6 +43,10 @@ public class UtilisateurService {
         if (request.getEmployeId() != null) {
             employe = employeRepository.findById(request.getEmployeId())
                     .orElseThrow(() -> new RuntimeException("Employé introuvable."));
+
+            utilisateurRepository.findByEmployeId(employe.getId()).ifPresent(user -> {
+                throw new RuntimeException("Cet employé possède déjà un compte utilisateur.");
+            });
         }
 
         Utilisateur utilisateur = Utilisateur.builder()
@@ -53,11 +59,15 @@ public class UtilisateurService {
 
         Utilisateur savedUtilisateur = utilisateurRepository.save(utilisateur);
 
+        if (employe != null) {
+            employe.setStatut(StatutEmploye.ACTIF);
+            employeRepository.save(employe);
+        }
+
         historiqueActionService.enregistrerAction(
                 "ADMIN",
                 "Création utilisateur",
                 "Création du compte " + savedUtilisateur.getEmail()
-                        + " avec le rôle " + savedUtilisateur.getRole()
         );
 
         return UtilisateurMapper.toDto(savedUtilisateur);
@@ -81,10 +91,7 @@ public class UtilisateurService {
             utilisateur.setEmail(request.getEmail());
         }
 
-        if (
-                request.getNouveauMotDePasse() != null
-                        && !request.getNouveauMotDePasse().isBlank()
-        ) {
+        if (request.getNouveauMotDePasse() != null && !request.getNouveauMotDePasse().isBlank()) {
             utilisateur.setMotDePasse(passwordEncoder.encode(request.getNouveauMotDePasse()));
         }
 
@@ -98,47 +105,16 @@ public class UtilisateurService {
 
         Utilisateur savedUtilisateur = utilisateurRepository.save(utilisateur);
 
-        StringBuilder details = new StringBuilder();
 
-        details.append("Modification du compte ")
-                .append(ancienEmail)
-                .append(".");
-
-        if (!ancienEmail.equals(savedUtilisateur.getEmail())) {
-            details.append(" Email : ")
-                    .append(ancienEmail)
-                    .append(" -> ")
-                    .append(savedUtilisateur.getEmail())
-                    .append(".");
-        }
-
-        if (ancienRole != savedUtilisateur.getRole()) {
-            details.append(" Rôle : ")
-                    .append(ancienRole)
-                    .append(" -> ")
-                    .append(savedUtilisateur.getRole())
-                    .append(".");
-        }
-
-        if (!ancienStatut.equals(savedUtilisateur.getStatut())) {
-            details.append(" Statut : ")
-                    .append(ancienStatut ? "Actif" : "Inactif")
-                    .append(" -> ")
-                    .append(savedUtilisateur.getStatut() ? "Actif" : "Inactif")
-                    .append(".");
-        }
-
-        if (
-                request.getNouveauMotDePasse() != null
-                        && !request.getNouveauMotDePasse().isBlank()
-        ) {
-            details.append(" Mot de passe réinitialisé.");
-        }
+        synchroniserFicheEmploye(savedUtilisateur);
 
         historiqueActionService.enregistrerAction(
                 "ADMIN",
                 "Modification utilisateur",
-                details.toString()
+                "Modification du compte " + ancienEmail
+                        + ". Rôle : " + ancienRole + " -> " + savedUtilisateur.getRole()
+                        + ". Statut : " + (ancienStatut ? "Actif" : "Inactif")
+                        + " -> " + (savedUtilisateur.getStatut() ? "Actif" : "Inactif")
         );
 
         return UtilisateurMapper.toDto(savedUtilisateur);
@@ -151,6 +127,8 @@ public class UtilisateurService {
         utilisateur.setStatut(true);
 
         Utilisateur savedUtilisateur = utilisateurRepository.save(utilisateur);
+
+        synchroniserFicheEmploye(savedUtilisateur);
 
         historiqueActionService.enregistrerAction(
                 "ADMIN",
@@ -169,6 +147,8 @@ public class UtilisateurService {
 
         Utilisateur savedUtilisateur = utilisateurRepository.save(utilisateur);
 
+        synchroniserFicheEmploye(savedUtilisateur);
+
         historiqueActionService.enregistrerAction(
                 "ADMIN",
                 "Désactivation utilisateur",
@@ -182,13 +162,36 @@ public class UtilisateurService {
         Utilisateur utilisateur = utilisateurRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Utilisateur introuvable."));
 
+        if (utilisateur.getEmploye() != null) {
+            Employe employe = utilisateur.getEmploye();
+            employe.setStatut(StatutEmploye.INACTIF);
+            employeRepository.save(employe);
+        }
+
         historiqueActionService.enregistrerAction(
                 "ADMIN",
                 "Suppression utilisateur",
                 "Suppression du compte " + utilisateur.getEmail()
-                        + " avec le rôle " + utilisateur.getRole()
         );
 
         utilisateurRepository.delete(utilisateur);
     }
+
+    private void synchroniserFicheEmploye(Utilisateur utilisateur) {
+        if (utilisateur.getEmploye() == null) {
+            return;
+        }
+
+        Employe employe = utilisateur.getEmploye();
+
+        if (Boolean.TRUE.equals(utilisateur.getStatut())) {
+            employe.setStatut(StatutEmploye.ACTIF);
+        } else {
+            employe.setStatut(StatutEmploye.INACTIF);
+        }
+
+        employeRepository.save(employe);
+    }
+
+
 }

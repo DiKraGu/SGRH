@@ -103,6 +103,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/fiches-paie/**")
                         .hasAnyAuthority("ROLE_ADMIN", "ROLE_RH", "ROLE_EMPLOYE")
 
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/offres/**")
+                        .permitAll()
+
+
                         .requestMatchers("/api/offres/**")
                         .hasAnyAuthority("ROLE_ADMIN", "ROLE_RH")
 
@@ -111,6 +115,8 @@ public class SecurityConfig {
 
                         .requestMatchers("/api/admin/historique/**")
                         .hasAuthority("ROLE_ADMIN")
+
+                        .requestMatchers("/cv/**").permitAll()
 
                         .anyRequest().authenticated()
                 )

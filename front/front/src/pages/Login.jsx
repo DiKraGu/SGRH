@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { login } from "../services/authService";
+import { getOffresPubliques } from "../services/candidatService";
 import "../styles/login.css";
 
 function Login() {
@@ -9,6 +10,25 @@ function Login() {
     const [email, setEmail] = useState("");
     const [motDePasse, setMotDePasse] = useState("");
     const [error, setError] = useState("");
+    const [offresOuvertesCount, setOffresOuvertesCount] = useState(0);
+
+    useEffect(() => {
+        const fetchOffres = async () => {
+            try {
+                const offres = await getOffresPubliques();
+
+                const count = offres.filter(
+                    (offre) => offre.statut === "OUVERTE"
+                ).length;
+
+                setOffresOuvertesCount(count);
+            } catch (error) {
+                setOffresOuvertesCount(0);
+            }
+        };
+
+        fetchOffres();
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -29,16 +49,12 @@ function Login() {
                 navigate("/employe");
             }
         } catch (err) {
-
-    console.log(err.response);
-
-    if (err.response?.data?.message) {
-        setError(err.response.data.message);
-    } else {
-        setError("Email ou mot de passe incorrect.");
-    }
-
-}
+            if (err.response?.data?.message) {
+                setError(err.response.data.message);
+            } else {
+                setError("Email ou mot de passe incorrect.");
+            }
+        }
     };
 
     return (
@@ -53,6 +69,18 @@ function Login() {
                 <p className="login-subtitle">
                     Une plateforme professionnelle pour centraliser la gestion des employés,
                     des congés, des salaires et du recrutement.
+                </p>
+
+                <button
+                    type="button"
+                    className="career-button"
+                    onClick={() => navigate("/carrieres")}
+                >
+                    Consulter nos offres d'emploi
+                </button>
+
+                <p className="career-count">
+                    {offresOuvertesCount} postes actuellement ouverts
                 </p>
             </div>
 

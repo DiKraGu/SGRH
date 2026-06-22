@@ -37,25 +37,15 @@ function OffresEmploiRH() {
         posteId: "",
     });
 
-    const postesParDepartement = {
-        1: [1],
-        2: [2],
-        3: [3],
-        4: [4],
-        5: [5],
-        6: [6],
-    };
+   const getPostesFiltres = (departementId) => {
+    if (!departementId) return [];
 
-    const getPostesFiltres = (departementId) => {
-        if (!departementId) return [];
+    return postes.filter(
+        (poste) => Number(poste.departementId) === Number(departementId)
+    );
+};
 
-        const idsPostesAutorises =
-            postesParDepartement[Number(departementId)] || [];
-
-        return postes.filter((poste) =>
-            idsPostesAutorises.includes(Number(poste.id))
-        );
-    };
+  
 
     const isDateLimiteValide = (dateLimite) => {
         if (!dateLimite) return false;
@@ -83,6 +73,7 @@ function OffresEmploiRH() {
         try {
             const departementsData = await getAllDepartements();
             const postesData = await getAllPostes();
+            console.log("POSTES DATA =", postesData);
 
             setDepartements(departementsData);
             setPostes(postesData);

@@ -42,29 +42,19 @@ function EmployesRH() {
         posteId: "",
     });
 
-    const postesParDepartement = {
-        1: [1, 7, 8, 9],
-        2: [2, 10, 11, 12],
-        3: [3, 13, 14, 15],
-        4: [4, 16, 17, 18],
-        5: [5, 19, 20, 21],
-        6: [6, 22, 23, 24],
-    };
+   const getPostesFiltres = (departementId) => {
+    if (!departementId) return [];
+
+    return postes.filter(
+        (poste) => Number(poste.departementId) === Number(departementId)
+    );
+};
 
     const isEmployeConnecte = (employe) => {
         return employe?.email === email;
     };
 
-    const getPostesFiltres = (departementId) => {
-        if (!departementId) return [];
-
-        const idsPostesAutorises =
-            postesParDepartement[Number(departementId)] || [];
-
-        return postes.filter((poste) =>
-            idsPostesAutorises.includes(Number(poste.id))
-        );
-    };
+   
 
     const fetchEmployes = async () => {
         try {

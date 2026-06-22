@@ -48,7 +48,6 @@ public class EmployeService {
                 "RH",
                 "Création employé",
                 "Création de l'employé " + savedEmploye.getPrenom() + " " + savedEmploye.getNom()
-                        + " au poste " + savedEmploye.getPoste().getLibelle()
         );
 
         return EmployeMapper.toDto(savedEmploye);
@@ -84,8 +83,6 @@ public class EmployeService {
                 .orElseThrow(() -> new RuntimeException("Employé introuvable"));
 
         String ancienNomComplet = employe.getPrenom() + " " + employe.getNom();
-        String ancienPoste = employe.getPoste() != null ? employe.getPoste().getLibelle() : "-";
-        String ancienDepartement = employe.getDepartement() != null ? employe.getDepartement().getNom() : "-";
 
         Departement departement = departementRepository.findById(dto.getDepartementId())
                 .orElseThrow(() -> new RuntimeException("Département introuvable"));
@@ -115,13 +112,12 @@ public class EmployeService {
 
         Employe savedEmploye = employeRepository.save(employe);
 
+        synchroniserCompteUtilisateur(savedEmploye);
+
         historiqueActionService.enregistrerAction(
                 "RH",
                 "Modification employé",
                 "Modification de l'employé " + ancienNomComplet
-                        + ". Nouveau nom : " + savedEmploye.getPrenom() + " " + savedEmploye.getNom()
-                        + ". Département : " + ancienDepartement + " -> " + savedEmploye.getDepartement().getNom()
-                        + ". Poste : " + ancienPoste + " -> " + savedEmploye.getPoste().getLibelle()
         );
 
         return EmployeMapper.toDto(savedEmploye);
@@ -134,6 +130,8 @@ public class EmployeService {
         employe.setStatut(StatutEmploye.INACTIF);
 
         Employe savedEmploye = employeRepository.save(employe);
+
+        synchroniserCompteUtilisateur(savedEmploye);
 
         historiqueActionService.enregistrerAction(
                 "RH",
@@ -148,6 +146,11 @@ public class EmployeService {
         Employe employe = employeRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Employé introuvable"));
 
+        utilisateurRepository.findByEmployeId(id).ifPresent(utilisateur -> {
+            utilisateur.setStatut(false);
+            utilisateurRepository.save(utilisateur);
+        });
+
         historiqueActionService.enregistrerAction(
                 "RH",
                 "Suppression employé",
@@ -155,6 +158,13 @@ public class EmployeService {
         );
 
         employeRepository.delete(employe);
+    }
+
+    private void synchroniserCompteUtilisateur(Employe employe) {
+        utilisateurRepository.findByEmployeId(employe.getId()).ifPresent(utilisateur -> {
+            utilisateur.setStatut(employe.getStatut() == StatutEmploye.ACTIF);
+            utilisateurRepository.save(utilisateur);
+        });
     }
 
     private void validateDateFinContrat(Employe employe) {

@@ -13,6 +13,7 @@ import OffresEmploiRH from "../pages/OffresEmploiRH";
 import SalairesRH from "../pages/SalairesRH";
 import UtilisateursAdmin from "../pages/UtilisateursAdmin";
 import HistoriqueAdmin from "../pages/HistoriqueAdmin";
+import EspaceCandidat from "../pages/EspaceCandidat";
 
 import ProtectedRoute from "./ProtectedRoute";
 
@@ -110,6 +111,8 @@ function AppRoutes() {
         </ProtectedRoute>
     }
 />
+
+<Route path="/carrieres" element={<EspaceCandidat />} />
 
                 <Route path="/unauthorized" element={<Unauthorized />} />
             </Routes>
