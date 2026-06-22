@@ -43,20 +43,23 @@ function EmployesRH() {
     });
 
     const postesParDepartement = {
-        1: [1],
-        2: [2],
-        3: [3],
-        4: [4],
-        5: [5],
-        6: [6],
+        1: [1, 7, 8, 9],
+        2: [2, 10, 11, 12],
+        3: [3, 13, 14, 15],
+        4: [4, 16, 17, 18],
+        5: [5, 19, 20, 21],
+        6: [6, 22, 23, 24],
+    };
+
+    const isEmployeConnecte = (employe) => {
+        return employe?.email === email;
     };
 
     const getPostesFiltres = (departementId) => {
-        if (!departementId) {
-            return [];
-        }
+        if (!departementId) return [];
 
-        const idsPostesAutorises = postesParDepartement[Number(departementId)] || [];
+        const idsPostesAutorises =
+            postesParDepartement[Number(departementId)] || [];
 
         return postes.filter((poste) =>
             idsPostesAutorises.includes(Number(poste.id))
@@ -66,8 +69,7 @@ function EmployesRH() {
     const fetchEmployes = async () => {
         try {
             const data = await getAllEmployes();
-            const sortedData = [...data].sort((a, b) => b.id - a.id);
-            setEmployes(sortedData);
+            setEmployes([...data].sort((a, b) => b.id - a.id));
         } catch (error) {
             console.error("Erreur chargement employés", error);
         }
@@ -111,12 +113,10 @@ function EmployesRH() {
             String(employe.departementId) === String(departementFilter);
 
         const matchContrat =
-            contratFilter === "TOUS" ||
-            employe.typeContrat === contratFilter;
+            contratFilter === "TOUS" || employe.typeContrat === contratFilter;
 
         const matchStatut =
-            statutFilter === "TOUS" ||
-            employe.statut === statutFilter;
+            statutFilter === "TOUS" || employe.statut === statutFilter;
 
         return matchSearch && matchDepartement && matchContrat && matchStatut;
     });
@@ -135,7 +135,8 @@ function EmployesRH() {
             setEditEmploye({
                 ...editEmploye,
                 typeContrat: value,
-                dateFinContrat: value === "CDD" ? editEmploye.dateFinContrat || "" : "",
+                dateFinContrat:
+                    value === "CDD" ? editEmploye.dateFinContrat || "" : "",
             });
             return;
         }
@@ -160,7 +161,8 @@ function EmployesRH() {
             setNewEmploye({
                 ...newEmploye,
                 typeContrat: value,
-                dateFinContrat: value === "CDD" ? newEmploye.dateFinContrat || "" : "",
+                dateFinContrat:
+                    value === "CDD" ? newEmploye.dateFinContrat || "" : "",
             });
             return;
         }
@@ -232,7 +234,10 @@ function EmployesRH() {
             fetchEmployes();
         } catch (error) {
             console.error("Erreur création employé", error);
-            alert(error.response?.data?.message || "Erreur lors de la création de l'employé.");
+            alert(
+                error.response?.data?.message ||
+                    "Erreur lors de la création de l'employé."
+            );
         }
     };
 
@@ -261,7 +266,10 @@ function EmployesRH() {
             fetchEmployes();
         } catch (error) {
             console.error("Erreur modification employé", error);
-            alert(error.response?.data?.message || "Erreur lors de la modification de l'employé.");
+            alert(
+                error.response?.data?.message ||
+                    "Erreur lors de la modification de l'employé."
+            );
         }
     };
 
@@ -306,7 +314,10 @@ function EmployesRH() {
                         Offres d'emploi
                     </div>
 
-                    <div className="sidebar-item" onClick={() => navigate("/rh/candidatures")}>
+                    <div
+                        className="sidebar-item"
+                        onClick={() => navigate("/rh/candidatures")}
+                    >
                         Candidatures
                     </div>
                 </div>
@@ -355,6 +366,7 @@ function EmployesRH() {
                             onChange={(e) => setDepartementFilter(e.target.value)}
                         >
                             <option value="TOUS">Tous les départements</option>
+
                             {departements.map((departement) => (
                                 <option key={departement.id} value={departement.id}>
                                     {departement.nom}
@@ -462,7 +474,10 @@ function EmployesRH() {
                             <p><strong>Contrat :</strong> {selectedEmploye.typeContrat}</p>
 
                             {selectedEmploye.typeContrat === "CDD" && (
-                                <p><strong>Date fin contrat :</strong> {selectedEmploye.dateFinContrat || "-"}</p>
+                                <p>
+                                    <strong>Date fin contrat :</strong>{" "}
+                                    {selectedEmploye.dateFinContrat || "-"}
+                                </p>
                             )}
 
                             <p><strong>Statut :</strong> {selectedEmploye.statut}</p>
@@ -472,22 +487,31 @@ function EmployesRH() {
                         </div>
 
                         <div className="modal-actions">
-                            <button
-                                className="action-button"
-                                onClick={() => {
-                                    setEditEmploye(selectedEmploye);
-                                    setSelectedEmploye(null);
-                                }}
-                            >
-                                Modifier
-                            </button>
+                            {isEmployeConnecte(selectedEmploye) ? (
+                                <div className="empty-state full-width">
+                                    Vous ne pouvez pas modifier votre propre fiche RH depuis cet espace.
+                                    Utilisez votre profil pour modifier votre email ou mot de passe.
+                                </div>
+                            ) : (
+                                <>
+                                    <button
+                                        className="action-button"
+                                        onClick={() => {
+                                            setEditEmploye(selectedEmploye);
+                                            setSelectedEmploye(null);
+                                        }}
+                                    >
+                                        Modifier
+                                    </button>
 
-                            <button
-                                className="action-button danger-button"
-                                onClick={() => handleDesactiver(selectedEmploye)}
-                            >
-                                Désactiver
-                            </button>
+                                    <button
+                                        className="action-button danger-button"
+                                        onClick={() => handleDesactiver(selectedEmploye)}
+                                    >
+                                        Désactiver
+                                    </button>
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -613,6 +637,7 @@ function EmployesRH() {
                                     onChange={(e) => handleEditChange("departementId", e.target.value)}
                                 >
                                     <option value="">Sélectionner un département</option>
+
                                     {departements.map((departement) => (
                                         <option key={departement.id} value={departement.id}>
                                             {departement.nom}
@@ -629,6 +654,7 @@ function EmployesRH() {
                                     disabled={!editEmploye.departementId}
                                 >
                                     <option value="">Sélectionner un poste</option>
+
                                     {getPostesFiltres(editEmploye.departementId).map((poste) => (
                                         <option key={poste.id} value={poste.id}>
                                             {poste.libelle}
@@ -761,7 +787,9 @@ function EmployesRH() {
                                     <input
                                         type="date"
                                         value={newEmploye.dateFinContrat || ""}
-                                        onChange={(e) => handleNewEmployeChange("dateFinContrat", e.target.value)}
+                                        onChange={(e) =>
+                                            handleNewEmployeChange("dateFinContrat", e.target.value)
+                                        }
                                         required
                                     />
                                 </div>
@@ -786,6 +814,7 @@ function EmployesRH() {
                                     required
                                 >
                                     <option value="">Sélectionner un département</option>
+
                                     {departements.map((departement) => (
                                         <option key={departement.id} value={departement.id}>
                                             {departement.nom}
@@ -803,6 +832,7 @@ function EmployesRH() {
                                     disabled={!newEmploye.departementId}
                                 >
                                     <option value="">Sélectionner un poste</option>
+
                                     {getPostesFiltres(newEmploye.departementId).map((poste) => (
                                         <option key={poste.id} value={poste.id}>
                                             {poste.libelle}
