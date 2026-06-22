@@ -39,16 +39,14 @@ public class SecurityConfig {
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-
         CorsConfiguration configuration = new CorsConfiguration();
 
         configuration.setAllowedOrigins(List.of("http://localhost:5173"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-
         source.registerCorsConfiguration("/**", configuration);
 
         return source;
@@ -70,11 +68,22 @@ public class SecurityConfig {
                                 "/api/auth/create-admin"
                         ).permitAll()
 
-                        .requestMatchers("/cv/**")
-                        .permitAll()
+                        .requestMatchers("/cv/**").permitAll()
 
                         .requestMatchers("/api/auth/register")
                         .hasAuthority("ROLE_ADMIN")
+
+                        .requestMatchers("/api/profil/**")
+                        .hasAnyAuthority("ROLE_ADMIN", "ROLE_RH", "ROLE_EMPLOYE")
+
+                        .requestMatchers("/api/admin/dashboard/**")
+                        .hasAuthority("ROLE_ADMIN")
+
+                        .requestMatchers("/api/admin/utilisateurs/**")
+                        .hasAuthority("ROLE_ADMIN")
+
+                        .requestMatchers("/api/dashboard/rh/**")
+                        .hasAnyAuthority("ROLE_ADMIN", "ROLE_RH")
 
                         .requestMatchers("/api/employes/me")
                         .hasAnyAuthority("ROLE_ADMIN", "ROLE_RH", "ROLE_EMPLOYE")
@@ -99,18 +108,6 @@ public class SecurityConfig {
 
                         .requestMatchers("/api/candidatures/**")
                         .permitAll()
-
-                        .requestMatchers("/api/dashboard/rh/**")
-                        .hasAnyAuthority("ROLE_ADMIN", "ROLE_RH")
-
-                        .requestMatchers("/api/admin/dashboard/**")
-                        .hasAuthority("ROLE_ADMIN")
-
-                        .requestMatchers("/api/admin/utilisateurs/**")
-                        .hasAuthority("ROLE_ADMIN")
-
-                        .requestMatchers("/api/profil/**")
-                        .hasAnyAuthority("ROLE_ADMIN", "ROLE_RH", "ROLE_EMPLOYE")
 
                         .anyRequest().authenticated()
                 )
