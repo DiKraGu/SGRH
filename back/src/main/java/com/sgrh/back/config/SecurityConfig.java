@@ -109,6 +109,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/candidatures/**")
                         .permitAll()
 
+                        .requestMatchers("/api/admin/historique/**")
+                        .hasAuthority("ROLE_ADMIN")
+
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(

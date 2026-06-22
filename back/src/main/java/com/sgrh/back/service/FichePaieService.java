@@ -19,6 +19,7 @@ public class FichePaieService {
 
     private final FichePaieRepository fichePaieRepository;
     private final EmployeRepository employeRepository;
+    private final HistoriqueActionService historiqueActionService;
 
     public List<FichePaieDto> getAllFichesPaie() {
         return fichePaieRepository.findAll()
@@ -77,7 +78,17 @@ public class FichePaieService {
                 "FP-" + saved.getAnnee() + "-" + String.format("%04d", saved.getId())
         );
 
-        return FichePaieMapper.toDto(fichePaieRepository.save(saved));
+        FichePaie finalSaved = fichePaieRepository.save(saved);
+
+        historiqueActionService.enregistrerAction(
+                "RH",
+                "Génération fiche de paie",
+                "Génération de la fiche de paie " + finalSaved.getNumeroFiche()
+                        + " pour " + employe.getPrenom() + " " + employe.getNom()
+                        + " (" + finalSaved.getMois() + "/" + finalSaved.getAnnee() + ")"
+        );
+
+        return FichePaieMapper.toDto(finalSaved);
     }
 
     public FichePaieDto updateFichePaie(Long id, FichePaieDto dto) {
@@ -95,6 +106,9 @@ public class FichePaieService {
                         throw new RuntimeException("Une autre fiche existe déjà pour cet employé sur ce mois.");
                     }
                 });
+
+        String numeroFiche = fichePaie.getNumeroFiche();
+        Employe employe = fichePaie.getEmploye();
 
         BigDecimal salaireBrut = dto.getSalaireBrut() != null
                 ? dto.getSalaireBrut()
@@ -119,12 +133,30 @@ public class FichePaieService {
 
         FichePaie updated = fichePaieRepository.save(fichePaie);
 
+        historiqueActionService.enregistrerAction(
+                "RH",
+                "Modification fiche de paie",
+                "Modification de la fiche de paie " + numeroFiche
+                        + " pour " + (employe != null ? employe.getPrenom() + " " + employe.getNom() : "employé inconnu")
+                        + ". Nouveau salaire net : " + updated.getSalaireNet()
+        );
+
         return FichePaieMapper.toDto(updated);
     }
 
     public void deleteFichePaie(Long id) {
         FichePaie fichePaie = fichePaieRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Fiche de paie introuvable"));
+
+        String numeroFiche = fichePaie.getNumeroFiche();
+        Employe employe = fichePaie.getEmploye();
+
+        historiqueActionService.enregistrerAction(
+                "RH",
+                "Suppression fiche de paie",
+                "Suppression de la fiche de paie " + numeroFiche
+                        + " de " + (employe != null ? employe.getPrenom() + " " + employe.getNom() : "employé inconnu")
+        );
 
         fichePaieRepository.delete(fichePaie);
     }

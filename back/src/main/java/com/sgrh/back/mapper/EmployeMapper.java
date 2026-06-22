@@ -4,8 +4,6 @@ import com.sgrh.back.dto.employe.EmployeDto;
 import com.sgrh.back.entity.Departement;
 import com.sgrh.back.entity.Employe;
 import com.sgrh.back.entity.Poste;
-import com.sgrh.back.enums.StatutEmploye;
-import com.sgrh.back.enums.TypeContrat;
 
 public class EmployeMapper {
 
@@ -21,22 +19,31 @@ public class EmployeMapper {
                 .email(employe.getEmail())
                 .telephone(employe.getTelephone())
                 .dateEmbauche(employe.getDateEmbauche())
+                .dateFinContrat(employe.getDateFinContrat())
                 .salaireBase(employe.getSalaireBase())
                 .quotaAnnuelConges(employe.getQuotaAnnuelConges())
                 .quotaInitialConges(employe.getQuotaInitialConges())
-                .statut(employe.getStatut() != null ? employe.getStatut().name() : null)
-                .typeContrat(employe.getTypeContrat() != null ? employe.getTypeContrat().name() : null)
+                .statut(employe.getStatut())
+                .typeContrat(employe.getTypeContrat())
                 .departementId(
-                        employe.getDepartement() != null ? employe.getDepartement().getId() : null
+                        employe.getDepartement() != null
+                                ? employe.getDepartement().getId()
+                                : null
                 )
                 .departementNom(
-                        employe.getDepartement() != null ? employe.getDepartement().getNom() : null
+                        employe.getDepartement() != null
+                                ? employe.getDepartement().getNom()
+                                : null
                 )
                 .posteId(
-                        employe.getPoste() != null ? employe.getPoste().getId() : null
+                        employe.getPoste() != null
+                                ? employe.getPoste().getId()
+                                : null
                 )
                 .posteLibelle(
-                        employe.getPoste() != null ? employe.getPoste().getLibelle() : null
+                        employe.getPoste() != null
+                                ? employe.getPoste().getLibelle()
+                                : null
                 )
                 .build();
     }
@@ -57,11 +64,12 @@ public class EmployeMapper {
                 .email(dto.getEmail())
                 .telephone(dto.getTelephone())
                 .dateEmbauche(dto.getDateEmbauche())
+                .dateFinContrat(dto.getDateFinContrat())
                 .salaireBase(dto.getSalaireBase())
                 .quotaAnnuelConges(dto.getQuotaAnnuelConges())
                 .quotaInitialConges(dto.getQuotaInitialConges())
-                .statut(dto.getStatut() != null ? StatutEmploye.valueOf(dto.getStatut()) : null)
-                .typeContrat(dto.getTypeContrat() != null ? TypeContrat.valueOf(dto.getTypeContrat()) : null)
+                .statut(dto.getStatut())
+                .typeContrat(dto.getTypeContrat())
                 .departement(departement)
                 .poste(poste)
                 .build();

@@ -12,7 +12,7 @@ import CongesRH from "../pages/CongesRH";
 import OffresEmploiRH from "../pages/OffresEmploiRH";
 import SalairesRH from "../pages/SalairesRH";
 import UtilisateursAdmin from "../pages/UtilisateursAdmin";
-
+import HistoriqueAdmin from "../pages/HistoriqueAdmin";
 
 import ProtectedRoute from "./ProtectedRoute";
 
@@ -98,6 +98,15 @@ function AppRoutes() {
     element={
         <ProtectedRoute allowedRoles={["ADMIN"]}>
             <UtilisateursAdmin />
+        </ProtectedRoute>
+    }
+/>
+
+<Route
+    path="/admin/historique"
+    element={
+        <ProtectedRoute allowedRoles={["ADMIN"]}>
+            <HistoriqueAdmin />
         </ProtectedRoute>
     }
 />

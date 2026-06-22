@@ -32,6 +32,9 @@ public class Employe {
     @Column(name = "date_embauche")
     private LocalDate dateEmbauche;
 
+    @Column(name = "date_fin_contrat")
+    private LocalDate dateFinContrat;
+
     @Column(name = "salaire_base")
     private BigDecimal salaireBase;
 

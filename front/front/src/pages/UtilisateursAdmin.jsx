@@ -207,9 +207,12 @@ function UtilisateursAdmin() {
                         Utilisateurs
                     </div>
 
-                    <div className="sidebar-item">
-                        Historique système
-                    </div>
+                    <div
+    className="sidebar-item"
+    onClick={() => navigate("/admin/historique")}
+>
+    Historique système
+</div>
                 </div>
             </aside>
 

@@ -22,6 +22,7 @@ public class UtilisateurService {
     private final UtilisateurRepository utilisateurRepository;
     private final EmployeRepository employeRepository;
     private final PasswordEncoder passwordEncoder;
+    private final HistoriqueActionService historiqueActionService;
 
     public List<UtilisateurDto> getAllUtilisateurs() {
         return utilisateurRepository.findAll()
@@ -50,12 +51,25 @@ public class UtilisateurService {
                 .employe(employe)
                 .build();
 
-        return UtilisateurMapper.toDto(utilisateurRepository.save(utilisateur));
+        Utilisateur savedUtilisateur = utilisateurRepository.save(utilisateur);
+
+        historiqueActionService.enregistrerAction(
+                "ADMIN",
+                "Création utilisateur",
+                "Création du compte " + savedUtilisateur.getEmail()
+                        + " avec le rôle " + savedUtilisateur.getRole()
+        );
+
+        return UtilisateurMapper.toDto(savedUtilisateur);
     }
 
     public UtilisateurDto updateUtilisateur(Long id, UpdateUtilisateurRequest request) {
         Utilisateur utilisateur = utilisateurRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Utilisateur introuvable."));
+
+        String ancienEmail = utilisateur.getEmail();
+        Role ancienRole = utilisateur.getRole();
+        Boolean ancienStatut = utilisateur.getStatut();
 
         if (request.getEmail() != null && !request.getEmail().isBlank()) {
             utilisateurRepository.findByEmail(request.getEmail()).ifPresent(existingUser -> {
@@ -67,7 +81,10 @@ public class UtilisateurService {
             utilisateur.setEmail(request.getEmail());
         }
 
-        if (request.getNouveauMotDePasse() != null && !request.getNouveauMotDePasse().isBlank()) {
+        if (
+                request.getNouveauMotDePasse() != null
+                        && !request.getNouveauMotDePasse().isBlank()
+        ) {
             utilisateur.setMotDePasse(passwordEncoder.encode(request.getNouveauMotDePasse()));
         }
 
@@ -79,7 +96,52 @@ public class UtilisateurService {
             utilisateur.setStatut(request.getStatut());
         }
 
-        return UtilisateurMapper.toDto(utilisateurRepository.save(utilisateur));
+        Utilisateur savedUtilisateur = utilisateurRepository.save(utilisateur);
+
+        StringBuilder details = new StringBuilder();
+
+        details.append("Modification du compte ")
+                .append(ancienEmail)
+                .append(".");
+
+        if (!ancienEmail.equals(savedUtilisateur.getEmail())) {
+            details.append(" Email : ")
+                    .append(ancienEmail)
+                    .append(" -> ")
+                    .append(savedUtilisateur.getEmail())
+                    .append(".");
+        }
+
+        if (ancienRole != savedUtilisateur.getRole()) {
+            details.append(" Rôle : ")
+                    .append(ancienRole)
+                    .append(" -> ")
+                    .append(savedUtilisateur.getRole())
+                    .append(".");
+        }
+
+        if (!ancienStatut.equals(savedUtilisateur.getStatut())) {
+            details.append(" Statut : ")
+                    .append(ancienStatut ? "Actif" : "Inactif")
+                    .append(" -> ")
+                    .append(savedUtilisateur.getStatut() ? "Actif" : "Inactif")
+                    .append(".");
+        }
+
+        if (
+                request.getNouveauMotDePasse() != null
+                        && !request.getNouveauMotDePasse().isBlank()
+        ) {
+            details.append(" Mot de passe réinitialisé.");
+        }
+
+        historiqueActionService.enregistrerAction(
+                "ADMIN",
+                "Modification utilisateur",
+                details.toString()
+        );
+
+        return UtilisateurMapper.toDto(savedUtilisateur);
     }
 
     public UtilisateurDto activerUtilisateur(Long id) {
@@ -88,7 +150,15 @@ public class UtilisateurService {
 
         utilisateur.setStatut(true);
 
-        return UtilisateurMapper.toDto(utilisateurRepository.save(utilisateur));
+        Utilisateur savedUtilisateur = utilisateurRepository.save(utilisateur);
+
+        historiqueActionService.enregistrerAction(
+                "ADMIN",
+                "Activation utilisateur",
+                "Activation du compte " + savedUtilisateur.getEmail()
+        );
+
+        return UtilisateurMapper.toDto(savedUtilisateur);
     }
 
     public UtilisateurDto desactiverUtilisateur(Long id) {
@@ -97,12 +167,27 @@ public class UtilisateurService {
 
         utilisateur.setStatut(false);
 
-        return UtilisateurMapper.toDto(utilisateurRepository.save(utilisateur));
+        Utilisateur savedUtilisateur = utilisateurRepository.save(utilisateur);
+
+        historiqueActionService.enregistrerAction(
+                "ADMIN",
+                "Désactivation utilisateur",
+                "Désactivation du compte " + savedUtilisateur.getEmail()
+        );
+
+        return UtilisateurMapper.toDto(savedUtilisateur);
     }
 
     public void deleteUtilisateur(Long id) {
         Utilisateur utilisateur = utilisateurRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Utilisateur introuvable."));
+
+        historiqueActionService.enregistrerAction(
+                "ADMIN",
+                "Suppression utilisateur",
+                "Suppression du compte " + utilisateur.getEmail()
+                        + " avec le rôle " + utilisateur.getRole()
+        );
 
         utilisateurRepository.delete(utilisateur);
     }

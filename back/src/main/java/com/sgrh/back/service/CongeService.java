@@ -20,9 +20,9 @@ public class CongeService {
 
     private final CongeRepository congeRepository;
     private final EmployeRepository employeRepository;
+    private final HistoriqueActionService historiqueActionService;
 
     public CongeDto demanderConge(CongeDto dto) {
-
         Employe employe = employeRepository.findById(dto.getEmployeId())
                 .orElseThrow(() -> new RuntimeException("Employé introuvable"));
 
@@ -31,6 +31,14 @@ public class CongeService {
         conge.setDateDemande(LocalDate.now());
 
         Conge saved = congeRepository.save(conge);
+
+        historiqueActionService.enregistrerAction(
+                "EMPLOYE",
+                "Demande congé",
+                "Demande de congé créée par " + employe.getPrenom() + " " + employe.getNom()
+                        + " du " + saved.getDateDebut()
+                        + " au " + saved.getDateFin()
+        );
 
         return CongeMapper.toDto(saved);
     }
@@ -57,7 +65,6 @@ public class CongeService {
     }
 
     public CongeDto validerConge(Long id) {
-
         Conge conge = congeRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Demande de congé introuvable"));
 
@@ -100,14 +107,20 @@ public class CongeService {
         conge.setStatut(StatutConge.VALIDE);
 
         employeRepository.save(employe);
-
         Conge saved = congeRepository.save(conge);
+
+        historiqueActionService.enregistrerAction(
+                "RH",
+                "Validation congé",
+                "Validation du congé de " + employe.getPrenom() + " " + employe.getNom()
+                        + " pour " + nombreJours + " jour(s). Quota restant : "
+                        + employe.getQuotaAnnuelConges()
+        );
 
         return CongeMapper.toDto(saved);
     }
 
     public CongeDto refuserConge(Long id) {
-
         Conge conge = congeRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Demande de congé introuvable"));
 
@@ -117,17 +130,40 @@ public class CongeService {
 
         conge.setStatut(StatutConge.REFUSE);
 
-        return CongeMapper.toDto(congeRepository.save(conge));
+        Conge saved = congeRepository.save(conge);
+
+        Employe employe = saved.getEmploye();
+
+        historiqueActionService.enregistrerAction(
+                "RH",
+                "Refus congé",
+                "Refus du congé de "
+                        + (employe != null ? employe.getPrenom() + " " + employe.getNom() : "employé inconnu")
+                        + " du " + saved.getDateDebut()
+                        + " au " + saved.getDateFin()
+        );
+
+        return CongeMapper.toDto(saved);
     }
 
     public void annulerConge(Long id) {
-
         Conge conge = congeRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Demande de congé introuvable"));
 
         if (conge.getStatut() != StatutConge.EN_ATTENTE) {
             throw new RuntimeException("Seule une demande en attente peut être annulée");
         }
+
+        Employe employe = conge.getEmploye();
+
+        historiqueActionService.enregistrerAction(
+                "EMPLOYE",
+                "Annulation congé",
+                "Annulation de la demande de congé de "
+                        + (employe != null ? employe.getPrenom() + " " + employe.getNom() : "employé inconnu")
+                        + " du " + conge.getDateDebut()
+                        + " au " + conge.getDateFin()
+        );
 
         congeRepository.delete(conge);
     }
