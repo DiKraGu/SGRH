@@ -198,7 +198,7 @@ function ReferentielsAdmin() {
             <main className="dashboard-content">
                 <div className="dashboard-header">
                     <div className="dashboard-title">
-                        <h1>Organisation RH</h1>
+                        <h1>Référentiel RH</h1>
                         <p>
                             Gestion des départements et des postes de l'entreprise.
                         </p>
