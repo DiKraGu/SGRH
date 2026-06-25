@@ -8,6 +8,7 @@ import {
 } from "../services/fichePaieService";
 import { getAllEmployes } from "../services/employeService";
 import "../styles/dashboard.css";
+import HeaderUserActions from "../components/HeaderUserActions";
 
 function SalairesRH() {
     const navigate = useNavigate();
@@ -346,7 +347,7 @@ function SalairesRH() {
                         <p>Gestion et génération des fiches de paie des employés.</p>
                     </div>
 
-                    <div className="dashboard-user">{email}</div>
+                    <HeaderUserActions />
                 </div>
 
                 <div className="section-card">

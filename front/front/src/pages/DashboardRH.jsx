@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { getRhDashboardStats } from "../services/dashboardService";
 import ProfilModal from "../components/ProfilModal";
 import "../styles/dashboard.css";
+import HeaderUserActions from "../components/HeaderUserActions";
 
 function DashboardRH() {
     const navigate = useNavigate();

@@ -7,6 +7,7 @@ import {
 } from "../services/congeService";
 import { getEmployeById } from "../services/employeService";
 import "../styles/dashboard.css";
+import HeaderUserActions from "../components/HeaderUserActions";
 
 function CongesRH() {
     const navigate = useNavigate();
@@ -180,8 +181,8 @@ function CongesRH() {
                         <p>Traitement et suivi des demandes de congés.</p>
                     </div>
 
-                    <div className="dashboard-user">{email}</div>
-                </div>
+                    <HeaderUserActions />
+                    </div>
 
                 <div className="section-card">
                     <div className="section-header">

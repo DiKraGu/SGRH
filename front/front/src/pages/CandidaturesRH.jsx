@@ -5,6 +5,7 @@ import {
     updateCandidatureStatut,
 } from "../services/candidatureService";
 import "../styles/dashboard.css";
+import HeaderUserActions from "../components/HeaderUserActions";
 
 function CandidaturesRH() {
     const navigate = useNavigate();
@@ -127,9 +128,7 @@ function CandidaturesRH() {
                         <p>Suivi et examen des candidatures reçues.</p>
                     </div>
 
-                    <div className="dashboard-user">
-                        {email}
-                    </div>
+                    <HeaderUserActions />
                 </div>
 
                 <div className="section-card">

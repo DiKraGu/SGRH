@@ -9,6 +9,7 @@ import {
 import { getAllDepartements } from "../services/departementService";
 import { getAllPostes } from "../services/posteService";
 import "../styles/dashboard.css";
+import HeaderUserActions from "../components/HeaderUserActions";
 
 function EmployesRH() {
     const navigate = useNavigate();
@@ -320,7 +321,7 @@ function EmployesRH() {
                         <p>Gestion des employés enregistrés dans le système.</p>
                     </div>
 
-                    <div className="dashboard-user">{email}</div>
+                    <HeaderUserActions />
                 </div>
 
                 <div className="section-card">

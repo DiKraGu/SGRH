@@ -9,6 +9,7 @@ import {
 import { getAllDepartements } from "../services/departementService";
 import { getAllPostes } from "../services/posteService";
 import "../styles/dashboard.css";
+import HeaderUserActions from "../components/HeaderUserActions";
 
 function OffresEmploiRH() {
     const navigate = useNavigate();
@@ -288,7 +289,7 @@ function OffresEmploiRH() {
                         <p>Création et suivi des offres publiées par le service RH.</p>
                     </div>
 
-                    <div className="dashboard-user">{email}</div>
+                    <HeaderUserActions />
                 </div>
 
                 <div className="section-card">

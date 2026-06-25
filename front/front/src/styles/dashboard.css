@@ -997,6 +997,53 @@ body {
     transform: translateY(-1px);
 }
 
+.dashboard-user-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.dashboard-user {
+    border: none;
+    background: #ffffff;
+    color: #0f172a;
+
+    padding: 14px 22px;
+    border-radius: 14px;
+
+    font-size: 1rem;          /* même taille que les autres pages */
+    font-weight: 700;         /* au lieu de 800 */
+    font-family: inherit;
+
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    box-shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
+    transition: 0.2s;
+}
+
+.dashboard-user:hover {
+    background: #f8fafc;
+}
+
+.logout-button {
+    border: none;
+    background: #dbeafe;
+    color: #1d4ed8;
+    padding: 14px 22px;
+    border-radius: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.logout-button:hover {
+    background: #bfdbfe;
+}
+
 @media (max-width: 900px) {
     .dashboard-layout {
         flex-direction: column;
