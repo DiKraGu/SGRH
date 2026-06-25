@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
     getOffresPubliques,
     postulerOffre,
@@ -10,6 +10,12 @@ function EspaceCandidat() {
     const [offres, setOffres] = useState([]);
     const [selectedOffre, setSelectedOffre] = useState(null);
     const [showPostulerModal, setShowPostulerModal] = useState(false);
+
+    const [searchTerm, setSearchTerm] = useState("");
+    const [posteFilter, setPosteFilter] = useState("TOUS");
+    const [departementFilter, setDepartementFilter] = useState("TOUS");
+    const [contratFilter, setContratFilter] = useState("TOUS");
+    const [sortOption, setSortOption] = useState("DATE_RECENTE");
 
     const [form, setForm] = useState({
         nom: "",
@@ -40,6 +46,97 @@ function EspaceCandidat() {
             console.error("Erreur chargement offres", error);
             setOffres([]);
         }
+    };
+
+    const postesDisponibles = useMemo(() => {
+        const postes = offres
+            .map((offre) => offre.posteLibelle)
+            .filter(Boolean);
+
+        return [...new Set(postes)].sort();
+    }, [offres]);
+
+    const departementsDisponibles = useMemo(() => {
+        const departements = offres
+            .map((offre) => offre.departementNom)
+            .filter(Boolean);
+
+        return [...new Set(departements)].sort();
+    }, [offres]);
+
+    const offresFiltrees = useMemo(() => {
+        let result = [...offres];
+
+        const search = searchTerm.trim().toLowerCase();
+
+        if (search) {
+            result = result.filter((offre) => {
+                const fullText = `
+                    ${offre.titre || ""}
+                    ${offre.description || ""}
+                    ${offre.departementNom || ""}
+                    ${offre.posteLibelle || ""}
+                    ${offre.typeContrat || ""}
+                `.toLowerCase();
+
+                return fullText.includes(search);
+            });
+        }
+
+        if (posteFilter !== "TOUS") {
+            result = result.filter(
+                (offre) => offre.posteLibelle === posteFilter
+            );
+        }
+
+        if (departementFilter !== "TOUS") {
+            result = result.filter(
+                (offre) => offre.departementNom === departementFilter
+            );
+        }
+
+        if (contratFilter !== "TOUS") {
+            result = result.filter(
+                (offre) => offre.typeContrat === contratFilter
+            );
+        }
+
+        result.sort((a, b) => {
+            switch (sortOption) {
+                case "DATE_ANCIENNE":
+                    return new Date(a.datePublication) - new Date(b.datePublication);
+
+                case "SALAIRE_DESC":
+                    return Number(b.salairePropose || 0) - Number(a.salairePropose || 0);
+
+                case "SALAIRE_ASC":
+                    return Number(a.salairePropose || 0) - Number(b.salairePropose || 0);
+
+                case "DATE_LIMITE_PROCHE":
+                    return new Date(a.dateLimite) - new Date(b.dateLimite);
+
+                case "DATE_RECENTE":
+                default:
+                    return new Date(b.datePublication) - new Date(a.datePublication);
+            }
+        });
+
+        return result;
+    }, [
+        offres,
+        searchTerm,
+        posteFilter,
+        departementFilter,
+        contratFilter,
+        sortOption,
+    ]);
+
+    const resetFilters = () => {
+        setSearchTerm("");
+        setPosteFilter("TOUS");
+        setDepartementFilter("TOUS");
+        setContratFilter("TOUS");
+        setSortOption("DATE_RECENTE");
     };
 
     const resetForm = () => {
@@ -202,13 +299,110 @@ function EspaceCandidat() {
                 </section>
 
                 <section className="section-card">
-                    <h2>Offres d'emploi disponibles</h2>
-                    <p className="section-subtitle">
-                        Offres publiées par le service RH.
-                    </p>
+                    <div className="career-offers-header">
+                        <div>
+                            <h2>Offres d'emploi disponibles</h2>
+                            <p className="section-subtitle">
+                                {offresFiltrees.length} offre(s) trouvée(s) sur {offres.length} ouverte(s).
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="career-filters-card">
+                        <div className="career-filters-grid">
+                            <div className="career-filter-field">
+                                <label>Recherche</label>
+                                <input
+                                    type="text"
+                                    placeholder="Titre, poste, département..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                />
+                            </div>
+
+                            <div className="career-filter-field">
+                                <label>Poste</label>
+                                <select
+                                    value={posteFilter}
+                                    onChange={(e) => setPosteFilter(e.target.value)}
+                                >
+                                    <option value="TOUS">Tous les postes</option>
+
+                                    {postesDisponibles.map((poste) => (
+                                        <option key={poste} value={poste}>
+                                            {poste}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="career-filter-field">
+                                <label>Département</label>
+                                <select
+                                    value={departementFilter}
+                                    onChange={(e) => setDepartementFilter(e.target.value)}
+                                >
+                                    <option value="TOUS">Tous les départements</option>
+
+                                    {departementsDisponibles.map((departement) => (
+                                        <option key={departement} value={departement}>
+                                            {departement}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="career-filter-field">
+                                <label>Contrat</label>
+                                <select
+                                    value={contratFilter}
+                                    onChange={(e) => setContratFilter(e.target.value)}
+                                >
+                                    <option value="TOUS">Tous les contrats</option>
+                                    <option value="CDI">CDI</option>
+                                    <option value="CDD">CDD</option>
+                                    <option value="STAGE">STAGE</option>
+                                </select>
+                            </div>
+
+                            <div className="career-filter-field">
+                                <label>Trier par</label>
+                                <select
+                                    value={sortOption}
+                                    onChange={(e) => setSortOption(e.target.value)}
+                                >
+                                    <option value="DATE_RECENTE">
+                                        Date publication : plus récent
+                                    </option>
+                                    <option value="DATE_ANCIENNE">
+                                        Date publication : plus ancien
+                                    </option>
+                                    <option value="SALAIRE_DESC">
+                                        Salaire : plus élevé
+                                    </option>
+                                    <option value="SALAIRE_ASC">
+                                        Salaire : plus bas
+                                    </option>
+                                    <option value="DATE_LIMITE_PROCHE">
+                                        Date limite : plus proche
+                                    </option>
+                                </select>
+                            </div>
+
+                            <div className="career-filter-actions">
+                                <button
+                                    type="button"
+                                    className="career-reset-button"
+                                    onClick={resetFilters}
+                                >
+                                    Réinitialiser
+                                </button>
+                            </div>
+                        </div>
+                    </div>
 
                     <div className="offers-grid">
-                        {offres.map((offre) => (
+                        {offresFiltrees.map((offre) => (
                             <div key={offre.id} className="offer-card">
                                 <div className="offer-header">
                                     <h3>{offre.titre}</h3>
@@ -267,9 +461,9 @@ function EspaceCandidat() {
                             </div>
                         ))}
 
-                        {offres.length === 0 && (
+                        {offresFiltrees.length === 0 && (
                             <div className="empty-state">
-                                Aucune offre ouverte actuellement.
+                                Aucune offre ne correspond aux filtres sélectionnés.
                             </div>
                         )}
                     </div>
