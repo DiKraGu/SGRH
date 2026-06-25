@@ -142,55 +142,64 @@ function EspaceCandidat() {
                     </div>
                 </section>
 
-                <section className="section-card">
-    <h2>Suivre ma candidature</h2>
+                <section className="candidate-tracking-card">
+                    <div className="candidate-tracking-header">
+                        <div>
+                            <h2>Suivre ma candidature</h2>
+                            <p>
+                                Entrez votre email pour consulter l’état de vos candidatures.
+                            </p>
+                        </div>
+                    </div>
 
-    <p className="section-subtitle">
-        Entrez votre email pour consulter l’état de vos candidatures.
-    </p>
+                    <form
+                        onSubmit={handleConsulterStatut}
+                        className="candidate-tracking-form"
+                    >
+                        <input
+                            className="candidate-tracking-input"
+                            type="email"
+                            placeholder="Votre email..."
+                            value={emailSuivi}
+                            onChange={(e) => setEmailSuivi(e.target.value)}
+                        />
 
-    <form onSubmit={handleConsulterStatut} className="filters-row">
-        <input
-            className="search-input"
-            type="email"
-            placeholder="Votre email..."
-            value={emailSuivi}
-            onChange={(e) => setEmailSuivi(e.target.value)}
-        />
+                        <button
+                            className="candidate-tracking-button"
+                            type="submit"
+                        >
+                            Consulter
+                        </button>
+                    </form>
 
-        <button className="action-button" type="submit">
-            Consulter
-        </button>
-    </form>
+                    {statuts.length > 0 && (
+                        <div className="candidate-status-results">
+                            <table className="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Offre</th>
+                                        <th>Date soumission</th>
+                                        <th>Statut</th>
+                                    </tr>
+                                </thead>
 
-    {statuts.length > 0 && (
-    <div className="table-container">
-        <table className="data-table">
-            <thead>
-                <tr>
-                    <th>Offre</th>
-                    <th>Date soumission</th>
-                    <th>Statut</th>
-                </tr>
-            </thead>
-
-            <tbody>
-                {statuts.map((candidature) => (
-                    <tr key={candidature.id}>
-                        <td>{candidature.offreTitre || "-"}</td>
-                        <td>{formatDate(candidature.dateSoumission)}</td>
-                        <td>
-                            <span className="status-badge ACTIF">
-                                {candidature.statut}
-                            </span>
-                        </td>
-                    </tr>
-                ))}
-            </tbody>
-        </table>
-    </div>
-)}
-</section>
+                                <tbody>
+                                    {statuts.map((candidature) => (
+                                        <tr key={candidature.id}>
+                                            <td>{candidature.offreTitre || "-"}</td>
+                                            <td>{formatDate(candidature.dateSoumission)}</td>
+                                            <td>
+                                                <span className="status-badge ACTIF">
+                                                    {candidature.statut}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </section>
 
                 <section className="section-card">
                     <h2>Offres d'emploi disponibles</h2>
@@ -265,8 +274,6 @@ function EspaceCandidat() {
                         )}
                     </div>
                 </section>
-
-                
             </main>
 
             {showPostulerModal && selectedOffre && (
